@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/nba-3d-shot-chart/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Shot Chart</title>
+    <script type="module" crossorigin src="/nba-3d-shot-chart/assets/index-dMLxNKxl.js"></script>
+    <link rel="stylesheet" crossorigin href="/nba-3d-shot-chart/assets/index-DB0qycOs.css">
+  </head>
+  <body>
+    <div id="app-root">
+      <div id="app-title">
+        <h1>NBA 3D Shot Chart</h1>
+        <p>Every shot of a player's season on a 3D court — green went in, red missed, taller spikes = better scoring areas</p>
+      </div>
+      <div id="app"></div>
+      <div id="split-app" class="hidden"></div>
+
+      <div id="tooltip" class="tooltip hidden" role="status"></div>
+
+      <div id="overlay" aria-live="polite"></div>
+
+      <div id="callouts" aria-live="polite"></div>
+
+      <button id="settings-toggle" class="icon-btn" title="Settings & help" aria-label="Settings and help">⚙</button>
+
+      <div id="settings-panel" class="panel hidden">
+        <h3>Display</h3>
+        <label class="row"><span>Color by</span>
+          <select id="color-mode">
+            <option value="outcome">Outcome</option>
+            <option value="type">Shot type</option>
+            <option value="quarter">Quarter</option>
+            <option value="team">Team color</option>
+          </select>
+        </label>
+        <label class="row checkbox"><input type="checkbox" id="colorblind-toggle" /><span>Colorblind-safe palette</span></label>
+        <label class="row checkbox"><input type="checkbox" id="contrast-toggle" /><span>High contrast</span></label>
+        <label class="row checkbox"><input type="checkbox" id="motion-toggle" /><span>Reduce motion</span></label>
+        <label class="row checkbox"><input type="checkbox" id="audio-toggle" /><span>Crowd audio (muted by default)</span></label>
+        <label class="row checkbox"><input type="checkbox" id="player-toggle" checked /><span>Player figure</span></label>
+        <label class="row checkbox"><input type="checkbox" id="labels-toggle" /><span>"What am I looking at?" labels</span></label>
+        <label class="row checkbox"><input type="checkbox" id="table-toggle" /><span>Table view (accessible data view)</span></label>
+
+        <h3>Share</h3>
+        <div class="btn-row">
+          <button id="screenshot-btn">Screenshot PNG</button>
+          <button id="copy-stat-btn">Copy summary</button>
+          <button id="copy-link-btn">Copy link</button>
+        </div>
+        <div class="btn-row">
+          <button id="bookmark-save-btn">Save current look</button>
+        </div>
+        <div id="bookmark-list"></div>
+
+        <h3>Help</h3>
+        <div class="btn-row">
+          <button id="help-btn">Keyboard shortcuts</button>
+          <button id="tour-btn">Guided tour</button>
+          <button id="demo-reset-btn">Reset to demo</button>
+        </div>
+      </div>
+
+      <div id="bottom-left-stack">
+        <div id="menu-header" class="panel" title="Drag to move this menu">
+          <span class="grip" aria-hidden="true">⠿</span>
+          <span class="menu-title">Shot filters &amp; tools</span>
+          <button id="menu-autohide" class="more-toggle" title="When on, this menu tucks away while your mouse is elsewhere">Auto-hide: off</button>
+        </div>
+        <div id="quick-row">
+          <div id="compare-bar" class="panel"></div>
+          <div id="stats-bar" class="panel"><button id="stats-open-btn" class="pill" title="Open classic 2D stat charts — shot chart, eFG% by zone, FG% by quarter and more">2D stat charts…</button></div>
+        </div>
+        <div id="filter-bar" class="panel"></div>
+      </div>
+
+      <div id="camera-bar" class="panel"></div>
+
+      <div id="timeline-bar" class="panel hidden"></div>
+
+      <div id="sidebar" class="panel hidden"></div>
+
+      <div id="onboarding" class="modal-backdrop hidden">
+        <div class="modal">
+          <h2>Every shot of a player's season, on a 3D court</h2>
+          <ol>
+            <li>Each marker is <strong>one real shot</strong> — <strong>green</strong> went in, <strong>red</strong> missed. Taller spikes mark areas where the player scores best. <strong>Drag</strong> to spin the court, <strong>scroll</strong> to zoom.</li>
+            <li>Use <strong>“Shot filters &amp; tools”</strong> (bottom-left) to switch players or show only certain shots — e.g. just three-pointers, or just makes.</li>
+            <li>Use the <strong>“Camera view”</strong> buttons (bottom-right) to change angles — Top-Down looks like a classic paper shot chart.</li>
+          </ol>
+          <button id="onboarding-dismiss">Got it</button>
+        </div>
+      </div>
+
+      <div id="help-modal" class="modal-backdrop hidden">
+        <div class="modal">
+          <h2>Keyboard shortcuts</h2>
+          <table class="shortcut-table">
+            <tr><td>Arrow keys</td><td>Orbit camera</td></tr>
+            <tr><td>+ / -</td><td>Zoom in / out</td></tr>
+            <tr><td>Tab</td><td>Move through filters &amp; controls</td></tr>
+            <tr><td>Enter / Space</td><td>Activate focused control</td></tr>
+            <tr><td>Esc</td><td>Clear selection / close panel</td></tr>
+            <tr><td>R</td><td>Reset camera view</td></tr>
+            <tr><td>?</td><td>Toggle this cheatsheet</td></tr>
+          </table>
+          <button id="help-dismiss">Close</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
