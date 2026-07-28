@@ -1,0 +1,115 @@
+{
+  "luka_doncic_2024-25_regular": {
+    "file": "luka_doncic_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Luka Don\u010di\u0107",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1025
+  },
+  "latest": "luka_doncic_2024-25_regular",
+  "luka_doncic_2018-19_regular": {
+    "file": "luka_doncic_2018-19_regular.json",
+    "subjectType": "player",
+    "name": "Luka Don\u010di\u0107",
+    "season": "2018-19",
+    "seasonType": "Regular Season",
+    "shotCount": 1186
+  },
+  "luka_doncic_2024-25_playoffs": {
+    "file": "luka_doncic_2024-25_playoffs.json",
+    "subjectType": "player",
+    "name": "Luka Don\u010di\u0107",
+    "season": "2024-25",
+    "seasonType": "Playoffs",
+    "shotCount": 104
+  },
+  "anthony_edwards_2024-25_regular": {
+    "file": "anthony_edwards_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Anthony Edwards",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1612
+  },
+  "los_angeles_lakers_2024-25_regular": {
+    "file": "los_angeles_lakers_2024-25_regular.json",
+    "subjectType": "team",
+    "name": "Los Angeles Lakers",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 7007
+  },
+  "stephen_curry_2024-25_regular": {
+    "file": "stephen_curry_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Stephen Curry",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1258
+  },
+  "lebron_james_2024-25_regular": {
+    "file": "lebron_james_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "LeBron James",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1270
+  },
+  "nikola_jokic_2024-25_regular": {
+    "file": "nikola_jokic_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Nikola Joki\u0107",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1364
+  },
+  "shai_gilgeous-alexander_2024-25_regular": {
+    "file": "shai_gilgeous-alexander_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Shai Gilgeous-Alexander",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1656
+  },
+  "giannis_antetokounmpo_2024-25_regular": {
+    "file": "giannis_antetokounmpo_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Giannis Antetokounmpo",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1319
+  },
+  "jayson_tatum_2024-25_regular": {
+    "file": "jayson_tatum_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Jayson Tatum",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1465
+  },
+  "kevin_durant_2024-25_regular": {
+    "file": "kevin_durant_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Kevin Durant",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1124
+  },
+  "victor_wembanyama_2024-25_regular": {
+    "file": "victor_wembanyama_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Victor Wembanyama",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 857
+  },
+  "devin_booker_2024-25_regular": {
+    "file": "devin_booker_2024-25_regular.json",
+    "subjectType": "player",
+    "name": "Devin Booker",
+    "season": "2024-25",
+    "seasonType": "Regular Season",
+    "shotCount": 1420
+  }
+}
