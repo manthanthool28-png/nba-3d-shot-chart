@@ -29,6 +29,3 @@ __pycache__
 
 # Local Claude Code settings
 .claude/settings.local.json
-
-# Actions workflow kept local-only (token lacks workflow scope)
-.github/
