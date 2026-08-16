@@ -2,7 +2,10 @@ import * as THREE from 'three';
 import { periodLabel } from '../data/stats.js';
 
 const PALETTES = {
-  default: { made: 0x35d48a, missed: 0xff5470 },
+  // Phase-2 refinement: brighter/higher-contrast outcome colors (user feedback
+  // said the originals read too dark against the dark theme). Same identity —
+  // green = made, red = missed. Contrast vs #0a0a0f bg: 13.7:1 / 7.4:1.
+  default: { made: 0x4df2a3, missed: 0xff7085 },
   // Blue/orange — colorblind-safe (deuteranopia/protanopia) substitute for
   // the default red/green make/miss pairing.
   colorblind: { made: 0x2b83ba, missed: 0xfdae61 },

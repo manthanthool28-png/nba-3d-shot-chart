@@ -32,6 +32,7 @@ import { createSplitView2D } from './ui/splitView2d.js';
 import { createPlayerCard } from './ui/playerCard.js';
 import { initKeyboardNav } from './ui/keyboard.js';
 import { initMenuDock } from './ui/menuDock.js';
+import { makeCollapsible } from './ui/collapsible.js';
 import { updateUrl, copyText, screenshotPng, loadBookmarks, saveBookmark, removeBookmark } from './ui/share.js';
 import { createCrowdAudio } from './audio.js';
 
@@ -107,6 +108,8 @@ async function main() {
   initOnboarding();
   const helpModal = initHelpModal();
   initMenuDock();
+  makeCollapsible(document.querySelector('#overlay-wrap'), els.overlay, { label: 'Stats', side: 'left' });
+  makeCollapsible(document.querySelector('#callouts-wrap'), els.callouts, { label: 'Insights', side: 'left' });
 
   function colorOptions() {
     return { colorMode: state.colorMode, palette: state.palette === 'colorblind' ? 'colorblind' : 'default', teamColor: dataset?.teamColor };

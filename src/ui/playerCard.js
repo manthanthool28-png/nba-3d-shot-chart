@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { makeCollapsible } from './collapsible.js';
 
 // Small self-contained viewport on the right edge showing a 3D player.
 // If a GLB model exists in public/models/ (per-player slug or player.glb),
@@ -211,13 +212,21 @@ export function createPlayerCard(parent) {
   container.className = 'panel';
   parent.appendChild(container);
 
+  // Inner content wrapper so the collapse toggle (a sibling) survives and the
+  // card can shrink to just its edge tab.
+  const content = document.createElement('div');
+  content.className = 'player-card-content';
+  container.appendChild(content);
+
   const canvasWrap = document.createElement('div');
   canvasWrap.className = 'player-card-canvas';
-  container.appendChild(canvasWrap);
+  content.appendChild(canvasWrap);
 
   const nameEl = document.createElement('div');
   nameEl.className = 'player-card-name';
-  container.appendChild(nameEl);
+  content.appendChild(nameEl);
+
+  makeCollapsible(container, content, { label: 'Player', side: 'right' });
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -359,7 +368,9 @@ export function createPlayerCard(parent) {
   }
 
   function update(dt, reduceMotion) {
-    if (!figure || container.classList.contains('hidden')) return;
+    // offsetParent is null whenever the card or its content is hidden
+    // (settings toggle or collapsed state) — skip rendering then.
+    if (!figure || !renderer.domElement.offsetParent) return;
     if (!reduceMotion) {
       figure.rotation.y += dt * 0.6;
       mixer?.update(dt);

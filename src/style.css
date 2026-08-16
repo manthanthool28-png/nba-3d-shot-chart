@@ -66,9 +66,29 @@ html, body {
   font-size: 14px;
   line-height: 1.4;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  white-space: nowrap;
+  max-width: 340px;
   z-index: 30;
 }
+
+/* ---------- Stat abbreviation info icons ---------- */
+.stat-info {
+  display: inline-block;
+  margin-left: 5px;
+  width: 1.1em;
+  height: 1.1em;
+  line-height: 1.1em;
+  text-align: center;
+  font-size: 0.8em;
+  font-style: italic;
+  font-weight: 600;
+  color: #9fb8ff;
+  border: 1px solid rgba(159, 184, 255, 0.55);
+  border-radius: 50%;
+  cursor: help;
+  vertical-align: 0.1em;
+  user-select: none;
+}
+.stat-info:hover { background: rgba(159, 184, 255, 0.15); }
 
 /* ---------- App title band (full-width, nothing overlaps it) ---------- */
 #app-title {
@@ -97,12 +117,37 @@ html, body {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
 }
 
-/* ---------- Overlay: stats + legend ---------- */
-#overlay {
+/* ---------- Collapsible panel wrappers ---------- */
+.collapsible-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.collapse-btn {
+  padding: 4px 10px;
+  font-size: 15px;
+  color: #9aa0ae;
+  background: rgba(18, 18, 26, 0.72);
+  white-space: nowrap;
+}
+.collapse-btn:hover { color: #fff; }
+
+#overlay-wrap {
   position: fixed;
   top: 84px; /* below the title band */
   left: 16px;
   z-index: 5;
+}
+
+#callouts-wrap {
+  position: fixed;
+  top: 84px; /* below the title band */
+  left: 402px;
+  z-index: 5;
+}
+
+/* ---------- Overlay: stats + legend ---------- */
+#overlay {
   font-size: 15px;
   background: rgba(20, 20, 28, 0.55);
   padding: 10px 14px;
@@ -159,10 +204,6 @@ html, body {
 
 /* ---------- Callouts ---------- */
 #callouts {
-  position: fixed;
-  top: 84px; /* below the title band */
-  left: 402px;
-  z-index: 5;
   max-width: 340px;
   font-size: 14px;
   color: #cfd3dc;
@@ -440,6 +481,9 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   z-index: 4;
   padding: 8px 10px 10px;
   text-align: center;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
 }
 #player-card .player-card-canvas canvas {
   display: block;
@@ -593,5 +637,5 @@ body.high-contrast .pill.active {
 @media (max-width: 900px) {
   #bottom-left-stack { max-width: 90vw; }
   #camera-bar { bottom: 72px; }
-  #callouts { display: none; }
+  #callouts-wrap { display: none; }
 }

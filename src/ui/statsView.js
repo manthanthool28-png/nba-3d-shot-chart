@@ -4,6 +4,7 @@ import { ACTION_TYPE_LABELS, actionBucketOf } from '../data/actionTypes.js';
 import { periodLabel } from '../data/stats.js';
 import { legendFor } from '../scene/colorEncoding.js';
 import { createSplitView2D } from './splitView2d.js';
+import { infoIcon } from './statGlossary.js';
 
 // 2D stat-chart dashboard for readers who think in classic NBA stats.
 // Renders against the same filtered shot slice as the 3D view; the ⚙ table
@@ -98,7 +99,15 @@ function renderKpis(parent, shots) {
   for (const k of kpis) {
     const tile = document.createElement('div');
     tile.className = 'kpi';
-    tile.innerHTML = `<div class="v">${k.v}</div><div class="l">${k.l}</div>`;
+    const value = document.createElement('div');
+    value.className = 'v';
+    value.textContent = k.v;
+    const label = document.createElement('div');
+    label.className = 'l';
+    label.textContent = k.l;
+    label.appendChild(infoIcon(k.l)); // glossary keys match the tile labels
+    tile.appendChild(value);
+    tile.appendChild(label);
     row.appendChild(tile);
   }
   parent.appendChild(row);

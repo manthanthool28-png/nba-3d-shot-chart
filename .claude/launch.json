@@ -13,6 +13,13 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "todo-app"],
       "port": 5173
+    },
+    {
+      "name": "portfolio-manthan",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "/Users/manthanthool/Desktop/Portfolio_Manthan-fix"],
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }
