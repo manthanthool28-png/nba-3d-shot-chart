@@ -4,7 +4,7 @@ import { ACTION_TYPE_LABELS, actionBucketOf } from '../data/actionTypes.js';
 import { periodLabel } from '../data/stats.js';
 import { legendFor } from '../scene/colorEncoding.js';
 import { createSplitView2D } from './splitView2d.js';
-import { infoIcon } from './statGlossary.js';
+import { statChip } from './statGlossary.js';
 
 // 2D stat-chart dashboard for readers who think in classic NBA stats.
 // Renders against the same filtered shot slice as the 3D view; the ⚙ table
@@ -104,8 +104,7 @@ function renderKpis(parent, shots) {
     value.textContent = k.v;
     const label = document.createElement('div');
     label.className = 'l';
-    label.textContent = k.l;
-    label.appendChild(infoIcon(k.l)); // glossary keys match the tile labels
+    label.appendChild(statChip(k.l)); // glossary keys match the tile labels
     tile.appendChild(value);
     tile.appendChild(label);
     row.appendChild(tile);
@@ -114,8 +113,7 @@ function renderKpis(parent, shots) {
 }
 
 // ---- classic 2D shot chart ----
-function renderCourtCard(parent, shots, colorOpts) {
-  const el = card(parent, 'Shot chart', 'Every attempt in the current filter');
+function renderCourtCard(el, shots, colorOpts) {
   const wrap = document.createElement('div');
   wrap.className = 'court2d';
   el.appendChild(wrap);
@@ -144,8 +142,7 @@ function renderCourtCard(parent, shots, colorOpts) {
 }
 
 // ---- eFG% by zone vs league average ----
-function renderZoneEfg(parent, shots, leagueEfg) {
-  const el = card(parent, 'eFG% by zone', 'White tick = league average');
+function renderZoneEfg(el, shots, leagueEfg) {
   const rows = Object.entries(ZONE_GROUPS).map(([key, group]) => {
     const zoneShots = shots.filter((s) => zoneGroupOf(s) === key);
     return { key, label: group.label, att: zoneShots.length, efg: efgPct(zoneShots), league: leagueEfg?.[key] };
@@ -180,8 +177,7 @@ function renderZoneEfg(parent, shots, leagueEfg) {
 }
 
 // ---- attempt share by zone (part-to-whole) ----
-function renderZoneShare(parent, shots) {
-  const el = card(parent, 'Where the shots come from', 'Share of attempts by zone');
+function renderZoneShare(el, shots) {
   const total = shots.length || 1;
   const rows = Object.entries(ZONE_GROUPS).map(([key, group]) => ({
     key, label: group.label, share: shots.filter((s) => zoneGroupOf(s) === key).length / total,
@@ -213,8 +209,7 @@ function renderZoneShare(parent, shots) {
 }
 
 // ---- FG% by quarter ----
-function renderQuarters(parent, shots) {
-  const el = card(parent, 'FG% by quarter');
+function renderQuarters(el, shots) {
   const groups = d3.groups(shots, (s) => Math.min(s.period, 5)).sort((a, b) => a[0] - b[0]);
   const rows = groups.map(([p, g]) => ({ label: p === 5 ? 'OT' : periodLabel(p), att: g.length, fg: fgPct(g) }));
   if (!rows.length) { svgLabel(svgIn(el, 30).svg, 0, 18, 'No shots match the current filters'); return; }
@@ -245,8 +240,7 @@ function renderQuarters(parent, shots) {
 }
 
 // ---- FG% by distance ----
-function renderDistance(parent, shots) {
-  const el = card(parent, 'FG% by distance', '3 ft bins · bins under 5 attempts hidden');
+function renderDistance(el, shots) {
   const BIN = 3;
   const byBin = d3.groups(shots, (s) => Math.min(Math.floor(s.distanceFt / BIN) * BIN, 33))
     .map(([d, g]) => ({ d, att: g.length, fg: fgPct(g) }))
@@ -291,8 +285,7 @@ function renderDistance(parent, shots) {
 }
 
 // ---- shot-type mix ----
-function renderTypeMix(parent, shots) {
-  const el = card(parent, 'Shot types', 'Attempts · FG% at the bar end');
+function renderTypeMix(el, shots) {
   const rows = Object.entries(ACTION_TYPE_LABELS)
     .map(([key, label]) => {
       const g = shots.filter((s) => actionBucketOf(s) === key);
@@ -345,10 +338,17 @@ export function renderStatsView(container, { shots, dataset, colorOpts, onClose 
   grid.className = 'stats-grid';
   container.appendChild(grid);
 
-  renderCourtCard(grid, shots, colorOpts);
-  renderZoneEfg(grid, shots, dataset.leagueEfg);
-  renderZoneShare(grid, shots);
-  renderQuarters(grid, shots);
-  renderDistance(grid, shots);
-  renderTypeMix(grid, shots);
+  // Create every card first, then fill them. Measuring inside a half-built
+  // grid gave the first card the full row width, which parked its chart
+  // off-screen and shrank the rest.
+  const panels = [
+    ['Shot chart', 'Every attempt in the current filter', (el) => renderCourtCard(el, shots, colorOpts)],
+    ['eFG% by zone', 'White tick = league average', (el) => renderZoneEfg(el, shots, dataset.leagueEfg)],
+    ['Where the shots come from', 'Share of attempts by zone', (el) => renderZoneShare(el, shots)],
+    ['FG% by quarter', null, (el) => renderQuarters(el, shots)],
+    ['FG% by distance', '3 ft bins · bins under 5 attempts hidden', (el) => renderDistance(el, shots)],
+    ['Shot types', 'Attempts · FG% at the bar end', (el) => renderTypeMix(el, shots)],
+  ];
+  const cardEls = panels.map(([title, sub]) => card(grid, title, sub));
+  panels.forEach(([, , fill], i) => fill(cardEls[i]));
 }

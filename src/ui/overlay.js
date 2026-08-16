@@ -1,6 +1,6 @@
 import { legendFor } from '../scene/colorEncoding.js';
 import { ZONE_GROUPS } from '../data/zones.js';
-import { infoIcon } from './statGlossary.js';
+import { statChip } from './statGlossary.js';
 
 export function renderOverlay(container, { name, season, seasonType, shownCount, totalCount, fgPct, colorMode, palette, teamColor, zoneEfg, leagueEfg, compareLabel }) {
   container.innerHTML = '';
@@ -10,8 +10,8 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
   container.appendChild(header);
 
   const stats = document.createElement('div');
-  stats.appendChild(document.createTextNode(`${totalCount} shots · ${(fgPct * 100).toFixed(1)}% FG`));
-  stats.appendChild(infoIcon('FG%'));
+  stats.appendChild(document.createTextNode(`${totalCount} shots · ${(fgPct * 100).toFixed(1)}% `));
+  stats.appendChild(statChip('FG%', 'FG%'));
   stats.appendChild(document.createTextNode(` (${shownCount} plotted)`));
   container.appendChild(stats);
 
@@ -35,8 +35,8 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
 
   const hint = document.createElement('div');
   hint.className = 'hint';
-  hint.appendChild(document.createTextNode('Every marker is one real shot. Taller spikes = areas where they score more efficiently (eFG%)'));
-  hint.appendChild(infoIcon('eFG%'));
+  hint.appendChild(document.createTextNode('Every marker is one real shot. Taller spikes = areas where they score more efficiently '));
+  hint.appendChild(statChip('eFG%'));
   hint.appendChild(document.createTextNode(' · thicker = more attempts'));
   container.appendChild(hint);
 
@@ -46,9 +46,10 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
       const leagueVal = leagueEfg[key] ?? 0;
       const row = document.createElement('div');
       row.className = 'percentile-bar';
+      // Abbreviated zones (3PT) become colour buttons; spelled-out ones stay plain.
       const label = document.createElement('span');
-      label.textContent = group.label;
-      if (key === 'three') label.appendChild(infoIcon('3PT'));
+      if (key === 'three') label.appendChild(statChip('3PT'));
+      else label.textContent = group.label;
       const track = document.createElement('div');
       track.className = 'percentile-track';
       const fill = document.createElement('div');

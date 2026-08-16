@@ -9,12 +9,20 @@ export function createSplitView2D(container) {
 
   function resize() {
     const rect = container.getBoundingClientRect();
+    if (!rect.width || !rect.height) return 0;
     const margin = 24;
     const scale = Math.min((rect.width - margin * 2) / COURT_WIDTH, (rect.height - margin * 2) / COURT_LENGTH);
     const offsetX = rect.width / 2;
     const offsetY = (rect.height - COURT_LENGTH * scale) / 2;
     root.attr('transform', `translate(${offsetX},${offsetY}) scale(${scale})`);
     return scale;
+  }
+
+  // The container is measured to place the court, but inside a CSS grid the
+  // card is often still at its pre-layout width on first render (which parked
+  // the court off-screen). Re-fit whenever the box actually changes.
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(() => resize()).observe(container);
   }
 
   function courtLines() {
