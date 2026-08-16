@@ -1,6 +1,6 @@
-# NBA 3D Shot Chart
+# Court Vision 3D
 
-Every shot of a player's season on an interactive 3D court — green went in,
+Every shot of an NBA player's season on an interactive 3D court — green went in,
 red missed, taller spikes mark the areas where the player scores most
 efficiently.
 

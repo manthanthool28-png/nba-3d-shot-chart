@@ -51,7 +51,7 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   color: #fff;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .tooltip {
@@ -63,7 +63,7 @@ html, body {
   background: rgba(20, 20, 28, 0.92);
   padding: 6px 10px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.4;
   border: 1px solid rgba(255, 255, 255, 0.15);
   max-width: 340px;
@@ -104,7 +104,7 @@ html, body {
 }
 #app-title h1 {
   margin: 0;
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 800;
   letter-spacing: 0.02em;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
@@ -115,7 +115,7 @@ html, body {
   margin-left: 6px;
   padding: 2px 9px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: #0a0a0f;
@@ -124,7 +124,7 @@ html, body {
 }
 #app-title p {
   margin: 3px 0 0;
-  font-size: 15px;
+  font-size: 16px;
   color: #b8bdc9;
   line-height: 1.4;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
@@ -138,8 +138,8 @@ html, body {
 }
 .collapse-btn {
   padding: 4px 10px;
-  font-size: 15px;
-  color: #9aa0ae;
+  font-size: 16px;
+  color: #c2c8d6;
   background: rgba(18, 18, 26, 0.72);
   white-space: nowrap;
 }
@@ -161,7 +161,7 @@ html, body {
 
 /* ---------- Overlay: stats + legend ---------- */
 #overlay {
-  font-size: 15px;
+  font-size: 16px;
   background: rgba(20, 20, 28, 0.55);
   padding: 10px 14px;
   border-radius: 8px;
@@ -171,8 +171,8 @@ html, body {
 }
 
 #overlay .hint {
-  color: #9aa0ae;
-  font-size: 13px;
+  color: #c2c8d6;
+  font-size: 15px;
   margin-top: 4px;
 }
 
@@ -192,7 +192,7 @@ html, body {
   grid-template-columns: 78px 1fr 46px;
   gap: 6px;
   align-items: center;
-  font-size: 13px;
+  font-size: 15px;
   margin-top: 3px;
 }
 #overlay .percentile-track {
@@ -218,8 +218,8 @@ html, body {
 /* ---------- Callouts ---------- */
 #callouts {
   max-width: 340px;
-  font-size: 14px;
-  color: #cfd3dc;
+  font-size: 15px;
+  color: #dfe3ec;
   background: rgba(20, 20, 28, 0.45);
   padding: 8px 12px;
   border-radius: 8px;
@@ -240,7 +240,7 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(20, 20, 28, 0.72);
   color: #fff;
-  font-size: 19px;
+  font-size: 20px;
   cursor: pointer;
 }
 .icon-btn:hover { background: rgba(40, 40, 55, 0.9); }
@@ -254,10 +254,10 @@ html, body {
   width: 310px;
 }
 #settings-panel h3 {
-  font-size: 13px;
+  font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #9aa0ae;
+  color: #c2c8d6;
   margin: 12px 0 6px;
 }
 #settings-panel h3:first-child { margin-top: 0; }
@@ -286,7 +286,7 @@ html, body {
   flex: 1;
   min-width: 0;
 }
-#bookmark-list { margin-top: 6px; font-size: 14px; }
+#bookmark-list { margin-top: 6px; font-size: 15px; }
 #bookmark-list .bookmark-item {
   display: flex;
   justify-content: space-between;
@@ -298,7 +298,7 @@ html, body {
   border: none;
   color: #ff5470;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 button, .pill {
@@ -307,7 +307,7 @@ button, .pill {
   color: #fff;
   border-radius: 7px;
   padding: 7px 12px;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
 }
 button:hover, .pill:hover { background: rgba(255, 255, 255, 0.16); }
@@ -356,12 +356,12 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   touch-action: none;
 }
 #menu-header.dragging { cursor: grabbing; }
-#menu-header .grip { color: #9aa0ae; font-size: 15px; }
+#menu-header .grip { color: #c2c8d6; font-size: 16px; }
 #menu-header .menu-title {
-  font-size: 13px;
+  font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #9aa0ae;
+  color: #c2c8d6;
 }
 #bottom-left-stack.stack-collapsed #quick-row,
 #bottom-left-stack.stack-collapsed #filter-bar {
@@ -376,10 +376,10 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
 }
 .filter-group:last-child { margin-bottom: 0; }
 .filter-group .group-label {
-  font-size: 12px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #9aa0ae;
+  color: #c2c8d6;
   width: 94px;
   flex-shrink: 0;
 }
@@ -389,7 +389,7 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
   padding: 3px 6px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* ---------- Compare + stats quick row ---------- */
@@ -424,7 +424,7 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   touch-action: none;
 }
 #camera-bar.dragging { cursor: grabbing; }
-#camera-bar .camera-drag-label .grip { color: #9aa0ae; font-size: 15px; }
+#camera-bar .camera-drag-label .grip { color: #c2c8d6; font-size: 16px; }
 #camera-bar .preset-grid {
   display: grid;
   grid-template-columns: repeat(4, auto);
@@ -433,7 +433,10 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
 #camera-bar .camera-controls {
   display: flex;
   gap: 5px;
+  flex-wrap: wrap; /* wraps instead of colliding with the filter dock */
+  justify-content: flex-end;
 }
+#camera-bar { max-width: min(46vw, 620px); }
 
 /* ---------- Timeline ---------- */
 #timeline-bar {
@@ -452,8 +455,8 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   flex: 1;
 }
 #timeline-bar .timeline-label {
-  font-size: 13px;
-  color: #9aa0ae;
+  font-size: 15px;
+  color: #c2c8d6;
   white-space: nowrap;
   min-width: 90px;
 }
@@ -469,9 +472,9 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   padding: 14px;
   overflow-y: auto;
 }
-#sidebar h3 { margin: 0 0 6px; font-size: 16px; }
-#sidebar .detail-row { font-size: 14px; color: #cfd3dc; margin: 3px 0; }
-#sidebar .detail-note { font-size: 13px; color: #7d8394; margin-top: 8px; font-style: italic; }
+#sidebar h3 { margin: 0 0 6px; font-size: 17px; }
+#sidebar .detail-row { font-size: 15px; color: #dfe3ec; margin: 3px 0; }
+#sidebar .detail-note { font-size: 15px; color: #a6acbd; margin-top: 8px; font-style: italic; }
 #sidebar .tray-item {
   display: flex;
   justify-content: space-between;
@@ -480,9 +483,9 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   border-radius: 6px;
   background: rgba(255,255,255,0.05);
   margin: 3px 0;
-  font-size: 13px;
+  font-size: 15px;
 }
-#sidebar .tray-item button { padding: 2px 6px; font-size: 12px; }
+#sidebar .tray-item button { padding: 2px 6px; font-size: 13px; }
 #sidebar .btn-row { display: flex; gap: 6px; margin-top: 8px; }
 
 /* ---------- Player figure card ---------- */
@@ -502,10 +505,10 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   display: block;
 }
 #player-card .player-card-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   margin-top: 2px;
-  color: #cfd3dc;
+  color: #dfe3ec;
 }
 
 /* ---------- Modals ---------- */
@@ -526,10 +529,10 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   max-width: 420px;
   width: 90%;
 }
-.modal h2 { margin-top: 0; font-size: 19px; }
-.modal ol { padding-left: 18px; font-size: 15px; line-height: 1.6; }
+.modal h2 { margin-top: 0; font-size: 20px; }
+.modal ol { padding-left: 18px; font-size: 16px; line-height: 1.6; }
 .modal button { margin-top: 12px; }
-.shortcut-table { width: 100%; font-size: 14px; border-collapse: collapse; }
+.shortcut-table { width: 100%; font-size: 15px; border-collapse: collapse; }
 .shortcut-table td { padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .shortcut-table td:first-child { color: #9fb8ff; font-family: monospace; }
 
@@ -556,8 +559,8 @@ body.stats-open #quick-row { display: none; }
   padding-right: 58px;
 }
 .stats-header .stats-note { min-width: 220px; }
-.stats-header h3 { margin: 0; font-size: 18px; }
-.stats-header .stats-note { flex: 1; font-size: 13px; color: #898781; }
+.stats-header h3 { margin: 0; font-size: 19px; }
+.stats-header .stats-note { flex: 1; font-size: 15px; color: #b3b1a8; }
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -570,8 +573,8 @@ body.stats-open #quick-row { display: none; }
   padding: 12px;
   min-width: 0;
 }
-.chart-card h4 { margin: 0 0 2px; font-size: 15px; }
-.chart-card .chart-sub { font-size: 13px; color: #898781; margin-bottom: 8px; }
+.chart-card h4 { margin: 0 0 2px; font-size: 16px; }
+.chart-card .chart-sub { font-size: 15px; color: #b3b1a8; margin-bottom: 8px; }
 .kpi-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -584,10 +587,10 @@ body.stats-open #quick-row { display: none; }
   border-radius: 10px;
   padding: 10px 12px;
 }
-.kpi .v { font-size: 28px; font-weight: 600; }
-.kpi .l { font-size: 13px; color: #898781; margin-top: 2px; }
+.kpi .v { font-size: 30px; font-weight: 600; }
+.kpi .l { font-size: 15px; color: #b3b1a8; margin-top: 2px; }
 .court2d { height: 300px; position: relative; }
-.stats-legend { display: flex; gap: 14px; font-size: 13px; color: #c3c2b7; margin-top: 6px; }
+.stats-legend { display: flex; gap: 14px; font-size: 15px; color: #d5d4cb; margin-top: 6px; }
 .stats-legend .dot {
   display: inline-block;
   width: 8px;
@@ -605,16 +608,25 @@ body.stats-open #quick-row { display: none; }
   overflow: auto;
   padding: 16px;
 }
-#table-view-wrap table { width: 100%; border-collapse: collapse; font-size: 14px; }
+#table-view-wrap table { width: 100%; border-collapse: collapse; font-size: 15px; }
 #table-view-wrap th, #table-view-wrap td { padding: 6px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); }
 #table-view-wrap th { cursor: pointer; position: sticky; top: 0; background: #14141c; }
 #table-view-wrap th:hover { color: #9fb8ff; }
 
 /* ---------- Shot labels ("what am I looking at") ---------- */
+.court-name-label {
+  font-size: 16px;
+  font-weight: 700;
+  background: rgba(10, 10, 15, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
 .shot-label {
   position: absolute;
   color: #fff;
-  font-size: 13px;
+  font-size: 15px;
   background: rgba(0,0,0,0.55);
   padding: 2px 6px;
   border-radius: 4px;
@@ -641,8 +653,8 @@ body.high-contrast .pill.active {
 .more-toggle {
   background: none;
   border: none;
-  color: #9aa0ae;
-  font-size: 13px;
+  color: #c2c8d6;
+  font-size: 15px;
   padding: 3px 4px;
 }
 .more-toggle:hover { background: none; color: #fff; }

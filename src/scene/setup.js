@@ -4,7 +4,12 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 export function createScene(container) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0a0a0f);
-  scene.fog = new THREE.Fog(0x0a0a0f, 60, 140);
+  // Fog is atmosphere only. The old 60–140 range faded the whole scene to
+  // background once the camera pulled back (split-compare sits ~130 units
+  // out, which washed BOTH courts to black), so it now starts much further.
+  const FOG_NEAR = 110;
+  const FOG_FAR = 340;
+  scene.fog = new THREE.Fog(0x0a0a0f, FOG_NEAR, FOG_FAR);
 
   const camera = new THREE.PerspectiveCamera(
     45,
@@ -25,9 +30,37 @@ export function createScene(container) {
   controls.dampingFactor = 0.08;
   controls.target.set(0, 0, 20);
   controls.minDistance = 15;
-  controls.maxDistance = 150;
+  controls.maxDistance = 260; // room to pull back far enough to frame two courts
   controls.maxPolarAngle = Math.PI / 2 - 0.02;
+  // Pan (the "hand" tool) drags the court sideways rather than orbiting it.
+  // Right-drag / two-finger-drag pans by default; the UI toggle below can put
+  // panning on the LEFT button so a plain drag moves the court.
+  controls.enablePan = true;
+  controls.screenSpacePanning = true;
+  controls.panSpeed = 0.9;
   controls.update();
+
+  const ROTATE_BUTTONS = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
+  const PAN_BUTTONS = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+  const ROTATE_TOUCH = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+  const PAN_TOUCH = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
+  controls.mouseButtons = { ...ROTATE_BUTTONS };
+  controls.touches = { ...ROTATE_TOUCH };
+
+  // Swap what a plain drag does: 'rotate' (orbit) or 'pan' (hand tool).
+  function setDragMode(mode) {
+    const pan = mode === 'pan';
+    controls.mouseButtons = { ...(pan ? PAN_BUTTONS : ROTATE_BUTTONS) };
+    controls.touches = { ...(pan ? PAN_TOUCH : ROTATE_TOUCH) };
+    renderer.domElement.style.cursor = pan ? 'grab' : '';
+  }
+
+  // Split-compare frames two courts from far away; keep fog from eating them.
+  function setWideView(enabled) {
+    if (!scene.fog) return;
+    scene.fog.near = enabled ? 260 : FOG_NEAR;
+    scene.fog.far = enabled ? 900 : FOG_FAR;
+  }
 
   const hemiLight = new THREE.HemisphereLight(0x9fb8ff, 0x0a0a0f, 0.6);
   scene.add(hemiLight);
@@ -58,7 +91,7 @@ export function createScene(container) {
   });
 
   function setHighContrast(enabled) {
-    scene.fog = enabled ? null : new THREE.Fog(0x0a0a0f, 60, 140);
+    scene.fog = enabled ? null : new THREE.Fog(0x0a0a0f, FOG_NEAR, FOG_FAR);
     hemiLight.intensity = enabled ? 0.85 : 0.6;
     keyLight.intensity = enabled ? 1.8 : 1.4;
   }
@@ -69,5 +102,5 @@ export function createScene(container) {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  return { scene, camera, renderer, controls, spotLights, setHighContrast };
+  return { scene, camera, renderer, controls, spotLights, setHighContrast, setDragMode, setWideView };
 }

@@ -64,7 +64,7 @@ function disposeGroup(group) {
 }
 
 async function main() {
-  const { scene, camera, renderer, controls, setHighContrast } = createScene(els.app);
+  const { scene, camera, renderer, controls, setHighContrast, setDragMode, setWideView } = createScene(els.app);
   const cameraDirector = createCameraDirector(camera, controls, { reduceMotion: () => state.reduceMotion });
   const court = buildCourt();
   scene.add(court.group);
@@ -84,6 +84,10 @@ async function main() {
 
   const particles = createParticleSystem(scene);
   const shotLabels = createShotLabels(els.appRoot);
+  // Floating player-name tags above each court in split-compare mode. Anchored
+  // in 3D so they stay correct however the camera is rotated (screen-space
+  // "left/right" flips as soon as you orbit past the baseline).
+  const courtLabels = createShotLabels(els.appRoot, 'court-name-label');
   const audio = createCrowdAudio();
   const interaction = createShotInteraction({ scene, camera, renderer, tooltipEl: els.tooltip });
   const split2d = createSplitView2D(els.splitApp);
@@ -158,7 +162,8 @@ async function main() {
     const field = buildShotField(shotsToRender, colorOptions(), streakIds);
     currentField = field;
     dynamicGroup.add(field.mesh, field.glowMesh);
-    interaction.setField({ mesh: field.mesh, shots: shotsToRender, baseColors: field.baseColors, tops: field.tops });
+    interaction.setField({ mesh: field.mesh, shots: shotsToRender, baseColors: field.baseColors, tops: field.tops, label: dataset.name });
+    interaction.setCompareField(null); // re-registered below when split mode is on
 
     if (timeline.open) applyDimForTrail(field, shotsToRender.length);
 
@@ -167,6 +172,11 @@ async function main() {
     const hotGlow = buildHotZoneGlow(field.efg);
     dynamicGroup.add(hotGlow.group);
     hotZoneGlowUpdate = hotGlow.update;
+
+    // Split mode pulls the camera far back to frame two courts — push the fog
+    // out so the scene doesn't fade into the background at that distance.
+    setWideView(state.compareMode === 'split' && !!compareDataset);
+    courtLabels.clear(); // re-populated below when split mode builds both courts
 
     let compareLabel = null;
     if (state.compareMode !== 'off' && compareDataset) {
@@ -183,7 +193,19 @@ async function main() {
         dynamicGroup.add(secondCourt.group);
         const compareField = buildShotField(filteredCompare, { colorMode: state.colorMode, palette: state.palette === 'colorblind' ? 'colorblind' : 'default', teamColor: compareDataset.teamColor }, new Set(), { offsetX: OFFSET });
         dynamicGroup.add(compareField.mesh);
-        compareLabel = `Split: ${dataset.name} (left) vs ${compareDataset.name} (right)`;
+        // Register the second court so hover/click works on it too.
+        interaction.setCompareField({
+          mesh: compareField.mesh,
+          shots: filteredCompare,
+          baseColors: compareField.baseColors,
+          tops: compareField.tops,
+          label: compareDataset.name,
+        });
+        courtLabels.setSamples([
+          { position: new THREE.Vector3(0, 15, 23.5), text: dataset.name },
+          { position: new THREE.Vector3(OFFSET, 15, 23.5), text: compareDataset.name },
+        ]);
+        compareLabel = `Split view: ${dataset.name} vs ${compareDataset.name} — each court is labelled; hover any shot for detail`;
       } else if (state.compareMode === 'diff') {
         const compareEfg = computeZoneEfg(filteredCompare).efg;
         const diffGlow = buildDiffZoneGlow(field.efg, compareEfg);
@@ -280,6 +302,8 @@ async function main() {
     renderCameraBar(els.cameraBar, {
       axisLock: state.axisLock,
       autoOrbit: state.autoOrbit,
+      dragMode: state.dragMode,
+      onDragMode: (mode) => { state.dragMode = mode; setDragMode(mode); renderControls(); },
       onPreset: (name) => cameraDirector.goTo(getPreset(name, { selectedShot: lastSelected?.[0] })),
       onReset: () => cameraDirector.goTo(getPreset('broadcast')),
       onTour: () => cameraDirector.runTour(['broadcast', 'coach', 'topDown', 'aboveRim', 'courtside']),
@@ -492,7 +516,10 @@ async function main() {
   // ---- Initial load ----
   await loadPrimary(state.datasetKey);
   if (state.compareKey) await loadCompare(state.compareKey);
-  cameraDirector.snap(getPreset('broadcast'));
+  // Split-compare restored from a URL needs the wide framing too, otherwise
+  // the second court sits off-screen behind the default broadcast view.
+  const initialPreset = state.compareMode === 'split' && compareDataset ? 'splitOverview' : 'broadcast';
+  cameraDirector.snap(getPreset(initialPreset));
   refresh();
 
   const clock = new THREE.Clock();
@@ -507,6 +534,7 @@ async function main() {
     court.updateNetSway(t, state.reduceMotion);
     hotZoneGlowUpdate?.(t);
     if (els.labelsSamples) shotLabels.update(camera, renderer);
+    courtLabels.update(camera, renderer);
 
     if (timeline.open && timeline.playing) {
       playAccum += dt * timeline.speed;

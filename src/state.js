@@ -18,6 +18,7 @@ export function createInitialState() {
     highContrast: false,
     reduceMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     axisLock: 'none', // none | x | y
+    dragMode: 'rotate', // rotate (orbit) | pan (hand tool)
     autoOrbit: false,
     tableView: false,
     audioOn: false,

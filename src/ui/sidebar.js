@@ -19,6 +19,8 @@ export function renderSidebar(container, { selectedShots, tray, onPin, onUnpin, 
     container.appendChild(h3);
 
     const rows = [
+      // Present only in split-compare, where a shot could be from either court.
+      ...(shot.sourceLabel ? [['Player', shot.sourceLabel]] : []),
       ['Zone', shot.zone],
       ['Action', shot.actionType],
       ['Distance', `${shot.distanceFt} ft`],

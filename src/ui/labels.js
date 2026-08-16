@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export function createShotLabels(container) {
+export function createShotLabels(container, extraClass = '') {
   const elements = [];
 
   function setSamples(samples) {
@@ -8,7 +8,7 @@ export function createShotLabels(container) {
     elements.length = 0;
     for (const sample of samples) {
       const el = document.createElement('div');
-      el.className = 'shot-label';
+      el.className = `shot-label${extraClass ? ` ${extraClass}` : ''}`;
       el.textContent = sample.text;
       container.appendChild(el);
       elements.push(el);

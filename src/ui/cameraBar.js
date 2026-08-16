@@ -14,7 +14,7 @@ const EXTRA_PRESETS = {
 // Advanced controls stay hidden until asked for; persists across re-renders.
 let moreOpen = false;
 
-export function renderCameraBar(container, { axisLock, autoOrbit, onPreset, onReset, onTour, onAxisLock, onAutoOrbit }) {
+export function renderCameraBar(container, { axisLock, autoOrbit, dragMode, onPreset, onReset, onTour, onAxisLock, onAutoOrbit, onDragMode }) {
   container.innerHTML = '';
 
   const mainRow = document.createElement('div');
@@ -34,6 +34,23 @@ export function renderCameraBar(container, { axisLock, autoOrbit, onPreset, onRe
     btn.addEventListener('click', () => onPreset(key));
     mainRow.appendChild(btn);
   }
+
+  // Drag-mode toggle: orbit (spin the court) vs hand (slide it sideways).
+  const rotateBtn = document.createElement('button');
+  rotateBtn.className = `pill${dragMode !== 'pan' ? ' active' : ''}`;
+  rotateBtn.textContent = '↻ Rotate';
+  rotateBtn.title = 'Drag to spin the court around';
+  rotateBtn.setAttribute('aria-pressed', String(dragMode !== 'pan'));
+  rotateBtn.addEventListener('click', () => onDragMode('rotate'));
+  mainRow.appendChild(rotateBtn);
+
+  const panBtn = document.createElement('button');
+  panBtn.className = `pill${dragMode === 'pan' ? ' active' : ''}`;
+  panBtn.textContent = '✋ Move';
+  panBtn.title = 'Hand tool: drag to slide the court sideways or up/down (useful for comparing two courts)';
+  panBtn.setAttribute('aria-pressed', String(dragMode === 'pan'));
+  panBtn.addEventListener('click', () => onDragMode('pan'));
+  mainRow.appendChild(panBtn);
 
   const resetBtn = document.createElement('button');
   resetBtn.textContent = 'Reset';

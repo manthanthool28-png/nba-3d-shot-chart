@@ -12,7 +12,7 @@ import { infoIcon } from './statGlossary.js';
 
 // Chart ink/chrome + validated categorical slots for the dark surface
 // (worst adjacent CVD ΔE 41.3, all >= 3:1 contrast on #14141c).
-const INK = { primary: '#ffffff', secondary: '#c3c2b7', muted: '#898781', grid: '#2c2c2a', baseline: '#383835' };
+const INK = { primary: '#ffffff', secondary: '#d5d4cb', muted: '#b3b1a8', grid: '#2c2c2a', baseline: '#383835' };
 const SERIES = { blue: '#3987e5', aqua: '#199e70', yellow: '#c98500' };
 const ZONE_COLORS = { paint: SERIES.blue, mid: SERIES.aqua, three: SERIES.yellow };
 
@@ -72,7 +72,7 @@ function svgIn(el, height) {
   return { svg, width };
 }
 
-function svgLabel(svg, x, y, text, { fill = INK.muted, size = 13, anchor = 'start', weight = 400, tabular = false } = {}) {
+function svgLabel(svg, x, y, text, { fill = INK.muted, size = 14, anchor = 'start', weight = 400, tabular = false } = {}) {
   return svg.append('text')
     .attr('x', x).attr('y', y)
     .attr('fill', fill)
@@ -263,7 +263,7 @@ function renderDistance(parent, shots) {
   for (const gv of [0.25, 0.5, 0.75]) {
     svg.append('line').attr('x1', 34).attr('x2', width - 12).attr('y1', y(gv)).attr('y2', y(gv))
       .attr('stroke', INK.grid).attr('stroke-width', 1);
-    svgLabel(svg, 28, y(gv) + 4, pct(gv, 0), { anchor: 'end', size: 12, tabular: true });
+    svgLabel(svg, 28, y(gv) + 4, pct(gv, 0), { anchor: 'end', size: 13, tabular: true });
   }
   svg.append('line').attr('x1', 34).attr('x2', width - 12).attr('y1', y(0)).attr('y2', y(0))
     .attr('stroke', INK.baseline).attr('stroke-width', 1);
@@ -286,7 +286,7 @@ function renderDistance(parent, shots) {
   });
 
   for (const tick of [0, 10, 20, 30]) {
-    svgLabel(svg, x(tick), plotH + 24, `${tick} ft`, { anchor: 'middle', size: 12, tabular: true });
+    svgLabel(svg, x(tick), plotH + 24, `${tick} ft`, { anchor: 'middle', size: 13, tabular: true });
   }
 }
 
