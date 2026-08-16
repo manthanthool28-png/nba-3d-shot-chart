@@ -109,6 +109,19 @@ html, body {
   letter-spacing: 0.02em;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
 }
+#app-title .version-badge {
+  display: inline-block;
+  vertical-align: 0.35em;
+  margin-left: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #0a0a0f;
+  background: #4df2a3; /* phase-2 accent = the new "made" green */
+  text-shadow: none;
+}
 #app-title p {
   margin: 3px 0 0;
   font-size: 15px;
