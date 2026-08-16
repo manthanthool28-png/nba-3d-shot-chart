@@ -665,234 +665,26 @@ body.high-contrast .pill.active {
   #callouts-wrap { display: none; }
 }
 
-/* ============================================================
-   SKEUOMORPHIC THEME (V2)
-   Physical, tactile surfaces: brushed-metal panels with bevelled
-   edges, convex buttons that depress when pressed, recessed
-   inputs, engraved labels and lit "LED" toggles. Appended last so
-   it cascades over the flat base styles above.
-   ============================================================ */
-
-body {
-  background:
-    radial-gradient(ellipse at 50% -10%, #1c2029 0%, #0d0e13 55%, #08080b 100%),
-    #08080b;
-}
-
-/* ---- Brushed-metal plate: raised, bevelled, sitting on the page ---- */
-.panel,
-#overlay,
-#callouts,
-.chart-card,
-.kpi,
-#table-view-wrap,
-#stats-view-wrap {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 16%, rgba(0,0,0,0.06) 62%, rgba(0,0,0,0.16) 100%),
-    linear-gradient(180deg, #3a4050 0%, #272c38 46%, #1b1f28 100%);
-  border: 1px solid rgba(0,0,0,0.72);
-  border-top-color: rgba(255,255,255,0.20);
-  border-radius: 14px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.16),
-    inset 0 -1px 0 rgba(0,0,0,0.55),
-    0 6px 18px rgba(0,0,0,0.62),
-    0 2px 5px rgba(0,0,0,0.5);
-  backdrop-filter: none;
-}
-
-#stats-view-wrap { border-radius: 16px; }
-
-/* ---- Convex buttons: light on top, shadowed below, press to inset ---- */
-button,
-.pill {
-  background:
-    linear-gradient(180deg, #656d80 0%, #454b5b 46%, #333846 100%);
-  border: 1px solid rgba(0,0,0,0.78);
-  border-top-color: rgba(255,255,255,0.30);
-  border-radius: 10px;
-  color: #f2f5fa;
-  text-shadow: 0 -1px 0 rgba(0,0,0,0.55);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.28),
-    inset 0 -2px 4px rgba(0,0,0,0.32),
-    0 2px 3px rgba(0,0,0,0.55),
-    0 1px 0 rgba(255,255,255,0.05);
-  transition: filter 90ms ease, box-shadow 90ms ease, transform 60ms ease;
-}
-button:hover,
-.pill:hover {
-  filter: brightness(1.16);
-  background:
-    linear-gradient(180deg, #6f7890 0%, #4b5162 46%, #383e4c 100%);
-}
-button:active,
-.pill:active {
-  transform: translateY(1px);
-  box-shadow:
-    inset 0 3px 6px rgba(0,0,0,0.60),
-    inset 0 -1px 0 rgba(255,255,255,0.07),
-    0 1px 0 rgba(255,255,255,0.04);
-  filter: brightness(0.94);
-}
-
-/* Engaged toggle = a lit green LED button */
-.pill.active {
-  background:
-    linear-gradient(180deg, #7dffc4 0%, #35d48a 45%, #1c9e63 100%);
-  border-color: rgba(0,0,0,0.7);
-  border-top-color: rgba(255,255,255,0.65);
-  color: #06301d;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.45);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.7),
-    inset 0 -2px 5px rgba(0,0,0,0.28),
-    0 0 14px rgba(77,242,163,0.5),
-    0 2px 3px rgba(0,0,0,0.55);
-}
-
-.pill:disabled,
-button:disabled {
-  filter: grayscale(0.5) brightness(0.75);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.45);
-}
-
-/* ---- Recessed inputs: carved into the plate ---- */
-select,
-#settings-panel select,
-.filter-group select,
-#compare-bar select,
-input[type="range"] {
-  background:
-    linear-gradient(180deg, #14171e 0%, #1d222c 100%);
-  border: 1px solid rgba(0,0,0,0.85);
-  border-bottom-color: rgba(255,255,255,0.14);
-  border-radius: 9px;
-  color: #eef1f7;
-  box-shadow:
-    inset 0 2px 5px rgba(0,0,0,0.66),
-    0 1px 0 rgba(255,255,255,0.08);
-  padding: 6px 9px;
-}
-
-/* ---- Engraved section labels ---- */
-.filter-group .group-label,
-#menu-header .menu-title,
-#settings-panel h3,
-.kpi .l {
-  text-shadow: 0 -1px 0 rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.10);
-}
-
-/* ---- Title: embossed metal ---- */
-#app-title {
-  background: linear-gradient(180deg, rgba(8,8,11,0.96) 0%, rgba(8,8,11,0.82) 60%, rgba(8,8,11,0) 100%);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-#app-title h1 {
-  background: linear-gradient(180deg, #ffffff 0%, #cdd4e2 48%, #8e97a8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: none;
-  filter: drop-shadow(0 2px 1px rgba(0,0,0,0.85)) drop-shadow(0 -1px 0 rgba(255,255,255,0.12));
-}
-
-/* Version badge: glossy green cap */
-#app-title .version-badge {
-  background: linear-gradient(180deg, #8dffcd 0%, #35d48a 50%, #189c60 100%);
-  border: 1px solid rgba(0,0,0,0.6);
-  border-top-color: rgba(255,255,255,0.7);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.75),
-    inset 0 -2px 4px rgba(0,0,0,0.28),
-    0 2px 4px rgba(0,0,0,0.6);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-}
-
-/* ---- Round gear: machined knob ---- */
-.icon-btn {
-  background:
-    radial-gradient(circle at 50% 22%, rgba(255,255,255,0.18) 0%, transparent 60%),
-    linear-gradient(180deg, #656d80 0%, #454b5b 48%, #2f343f 100%);
-  border: 1px solid rgba(0,0,0,0.8);
-  border-top-color: rgba(255,255,255,0.35);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.3),
-    inset 0 -2px 5px rgba(0,0,0,0.35),
-    0 3px 6px rgba(0,0,0,0.6);
-}
-
-/* ---- Tooltip: floating glass slab ---- */
-.tooltip {
-  background: linear-gradient(180deg, #2c3140 0%, #171a22 100%);
-  border: 1px solid rgba(0,0,0,0.8);
-  border-top-color: rgba(255,255,255,0.22);
-  border-radius: 10px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.16),
-    0 8px 22px rgba(0,0,0,0.7);
-}
-
-/* ---- Collapse tabs read as physical latches ---- */
-.collapse-btn { border-radius: 9px; }
-
-/* ---- Progress tracks: carved grooves with a glossy fill ---- */
-#overlay .percentile-track {
-  background: linear-gradient(180deg, #0e1015 0%, #1a1e26 100%);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.07);
-  border-radius: 999px;
-  height: 9px;
-}
-#overlay .percentile-fill {
-  background: linear-gradient(180deg, #7dffc4 0%, #35d48a 55%, #1c9e63 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 0 8px rgba(77,242,163,0.45);
-  border-radius: 999px;
-}
-
-/* ---- Court name tags: enamel badges ---- */
-.court-name-label {
-  background: linear-gradient(180deg, #2f3543 0%, #14171e 100%);
-  border: 1px solid rgba(0,0,0,0.8);
-  border-top-color: rgba(255,255,255,0.35);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.25),
-    0 4px 10px rgba(0,0,0,0.65);
-  text-shadow: 0 -1px 0 rgba(0,0,0,0.7);
-}
-
-/* ============================================================
-   STAT ABBREVIATION CHIPS — every abbreviation is a colour button
-   ============================================================ */
+/* ---------- Stat abbreviation chips: flat colour buttons ---------- */
 .stat-chip {
   display: inline-block;
-  padding: 2px 10px;
+  padding: 2px 9px;
   margin: 0 2px;
   font-size: 0.86em;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1.5;
-  border-radius: 999px;
+  border-radius: 6px;
   cursor: help;
-  color: #08131a;
-  border: 1px solid rgba(0,0,0,0.62);
-  border-top-color: rgba(255,255,255,0.62);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.38);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.62),
-    inset 0 -2px 4px rgba(0,0,0,0.26),
-    0 2px 3px rgba(0,0,0,0.55);
+  color: #0a0f14;
+  border: none;
   vertical-align: baseline;
 }
-.stat-chip:hover { filter: brightness(1.12); }
-.stat-chip:active {
-  transform: translateY(1px);
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.5);
-}
-.stat-chip[data-stat="blue"]   { background: linear-gradient(180deg, #9fd0ff 0%, #4f9bf0 52%, #2f6fc0 100%); }
-.stat-chip[data-stat="green"]  { background: linear-gradient(180deg, #8dffcd 0%, #35d48a 52%, #1c9e63 100%); }
-.stat-chip[data-stat="orange"] { background: linear-gradient(180deg, #ffd79a 0%, #f0a44f 52%, #c67a2b 100%); }
-.stat-chip[data-stat="violet"] { background: linear-gradient(180deg, #d6c4ff 0%, #a689f0 52%, #7a5cc4 100%); }
-.stat-chip[data-stat="aqua"]   { background: linear-gradient(180deg, #a5f2e8 0%, #4fc9bb 52%, #2b998d 100%); }
+.stat-chip:hover { filter: brightness(1.1); }
+.stat-chip[data-stat="blue"]   { background: #4f9bf0; }
+.stat-chip[data-stat="green"]  { background: #35d48a; }
+.stat-chip[data-stat="orange"] { background: #f0a44f; }
+.stat-chip[data-stat="violet"] { background: #a689f0; }
+.stat-chip[data-stat="aqua"]   { background: #4fc9bb; }
 
-/* KPI tile label is now just the chip */
 .kpi .l { margin-top: 6px; }
