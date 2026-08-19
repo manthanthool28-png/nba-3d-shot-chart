@@ -69,10 +69,6 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
     }
   }
 
-  const controlsHint = document.createElement('div');
-  controlsHint.className = 'hint';
-  controlsHint.textContent = 'Drag to orbit · scroll to zoom · click a shot for detail · ⚙ for settings';
-  container.appendChild(controlsHint);
 }
 
 export function renderCallouts(container, callouts) {

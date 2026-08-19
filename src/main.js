@@ -31,7 +31,7 @@ import { createShotLabels } from './ui/labels.js';
 import { createSplitView2D } from './ui/splitView2d.js';
 import { createPlayerCard } from './ui/playerCard.js';
 import { initKeyboardNav } from './ui/keyboard.js';
-import { initMenuDock } from './ui/menuDock.js';
+import { initMenuDock, makeDraggable } from './ui/menuDock.js';
 import { makeCollapsible } from './ui/collapsible.js';
 import { updateUrl, copyText, screenshotPng, loadBookmarks, saveBookmark, removeBookmark } from './ui/share.js';
 import { createCrowdAudio } from './audio.js';
@@ -112,8 +112,19 @@ async function main() {
   initOnboarding();
   const helpModal = initHelpModal();
   initMenuDock();
-  makeCollapsible(document.querySelector('#overlay-wrap'), els.overlay, { label: 'Stats', side: 'left' });
-  makeCollapsible(document.querySelector('#callouts-wrap'), els.callouts, { label: 'Insights', side: 'left' });
+  const overlayWrap = document.querySelector('#overlay-wrap');
+  const calloutsWrap = document.querySelector('#callouts-wrap');
+  makeCollapsible(overlayWrap, els.overlay, { label: 'Stats', side: 'left' });
+  makeCollapsible(calloutsWrap, els.callouts, { label: 'Insights', side: 'left' });
+  // Both info panels can be dragged out of the way of the court.
+  makeDraggable(overlayWrap, {
+    storageKey: 'shotchart.overlay.pos',
+    isHandle: (e) => !e.target.closest('button, select, a, .stat-chip'),
+  });
+  makeDraggable(calloutsWrap, {
+    storageKey: 'shotchart.callouts.pos',
+    isHandle: (e) => !e.target.closest('button, select, a, .stat-chip'),
+  });
 
   function colorOptions() {
     return { colorMode: state.colorMode, palette: state.palette === 'colorblind' ? 'colorblind' : 'default', teamColor: dataset?.teamColor };
@@ -382,6 +393,9 @@ async function main() {
       shots: filteredPrimary,
       dataset,
       colorOpts: colorOptions(),
+      filters: state.filters,
+      onFilterChange: (patch) => { Object.assign(state.filters, patch); refresh(); },
+      onOpenTable: () => toggleTableView(true),
       onClose: () => toggleStatsView(false),
     });
   }

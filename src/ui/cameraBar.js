@@ -14,81 +14,80 @@ const EXTRA_PRESETS = {
 // Advanced controls stay hidden until asked for; persists across re-renders.
 let moreOpen = false;
 
+function pillBtn(label, { active = false, title = '', onClick }) {
+  const btn = document.createElement('button');
+  btn.className = `pill${active ? ' active' : ''}`;
+  btn.textContent = label;
+  if (title) btn.title = title;
+  btn.setAttribute('aria-pressed', String(active));
+  btn.addEventListener('click', onClick);
+  return btn;
+}
+
 export function renderCameraBar(container, { axisLock, autoOrbit, dragMode, onPreset, onReset, onTour, onAxisLock, onAutoOrbit, onDragMode }) {
   container.innerHTML = '';
 
-  const mainRow = document.createElement('div');
-  mainRow.className = 'camera-controls';
+  // --- Header: drag handle + title + expander, on its own line ---
+  const header = document.createElement('div');
+  header.className = 'camera-header';
 
-  const rowLabel = document.createElement('span');
-  rowLabel.className = 'group-label camera-drag-label';
-  rowLabel.style.width = 'auto';
-  rowLabel.innerHTML = '<span class="grip" aria-hidden="true">⠿</span> Camera view';
-  rowLabel.title = 'Change the angle you watch the court from · drag to move this panel';
-  mainRow.appendChild(rowLabel);
-
-  for (const [key, label] of Object.entries(PRIMARY_PRESETS)) {
-    const btn = document.createElement('button');
-    btn.className = 'pill';
-    btn.textContent = label;
-    btn.addEventListener('click', () => onPreset(key));
-    mainRow.appendChild(btn);
-  }
-
-  // Drag-mode toggle: orbit (spin the court) vs hand (slide it sideways).
-  const rotateBtn = document.createElement('button');
-  rotateBtn.className = `pill${dragMode !== 'pan' ? ' active' : ''}`;
-  rotateBtn.textContent = '↻ Rotate';
-  rotateBtn.title = 'Drag to spin the court around';
-  rotateBtn.setAttribute('aria-pressed', String(dragMode !== 'pan'));
-  rotateBtn.addEventListener('click', () => onDragMode('rotate'));
-  mainRow.appendChild(rotateBtn);
-
-  const panBtn = document.createElement('button');
-  panBtn.className = `pill${dragMode === 'pan' ? ' active' : ''}`;
-  panBtn.textContent = '✋ Move';
-  panBtn.title = 'Hand tool: drag to slide the court sideways or up/down (useful for comparing two courts)';
-  panBtn.setAttribute('aria-pressed', String(dragMode === 'pan'));
-  panBtn.addEventListener('click', () => onDragMode('pan'));
-  mainRow.appendChild(panBtn);
-
-  const resetBtn = document.createElement('button');
-  resetBtn.textContent = 'Reset';
-  resetBtn.title = 'Reset camera view';
-  resetBtn.addEventListener('click', onReset);
-  mainRow.appendChild(resetBtn);
+  const title = document.createElement('span');
+  title.className = 'camera-title';
+  title.innerHTML = '<span class="grip" aria-hidden="true">⠿</span> Camera view';
+  title.title = 'Change the angle you watch the court from · drag to move this panel';
+  header.appendChild(title);
 
   const moreBtn = document.createElement('button');
   moreBtn.className = 'more-toggle';
-  moreBtn.textContent = moreOpen ? 'Less ▴' : 'More views ▾';
+  moreBtn.textContent = moreOpen ? 'Less' : 'More views';
   moreBtn.setAttribute('aria-expanded', String(moreOpen));
   moreBtn.addEventListener('click', () => {
     moreOpen = !moreOpen;
-    renderCameraBar(container, { axisLock, autoOrbit, onPreset, onReset, onTour, onAxisLock, onAutoOrbit });
+    renderCameraBar(container, { axisLock, autoOrbit, dragMode, onPreset, onReset, onTour, onAxisLock, onAutoOrbit, onDragMode });
   });
-  mainRow.appendChild(moreBtn);
-  container.appendChild(mainRow);
+  header.appendChild(moreBtn);
+  container.appendChild(header);
+
+  // --- Angle presets ---
+  const presetRow = document.createElement('div');
+  presetRow.className = 'camera-row';
+  for (const [key, label] of Object.entries(PRIMARY_PRESETS)) {
+    presetRow.appendChild(pillBtn(label, { onClick: () => onPreset(key) }));
+  }
+  presetRow.appendChild(pillBtn('Reset', { title: 'Reset camera view', onClick: onReset }));
+  container.appendChild(presetRow);
+
+  // --- What a plain drag does ---
+  const dragRow = document.createElement('div');
+  dragRow.className = 'camera-row';
+  const dragLabel = document.createElement('span');
+  dragLabel.className = 'camera-sublabel';
+  dragLabel.textContent = 'Drag to';
+  dragRow.appendChild(dragLabel);
+  dragRow.appendChild(pillBtn('Rotate', {
+    active: dragMode !== 'pan',
+    title: 'Drag to spin the court around',
+    onClick: () => onDragMode('rotate'),
+  }));
+  dragRow.appendChild(pillBtn('Move', {
+    active: dragMode === 'pan',
+    title: 'Drag to slide the court sideways or up/down — useful when comparing two courts',
+    onClick: () => onDragMode('pan'),
+  }));
+  container.appendChild(dragRow);
 
   if (!moreOpen) return;
 
-  const grid = document.createElement('div');
-  grid.className = 'preset-grid';
+  const extraRow = document.createElement('div');
+  extraRow.className = 'camera-row';
   for (const [key, label] of Object.entries(EXTRA_PRESETS)) {
-    const btn = document.createElement('button');
-    btn.className = 'pill';
-    btn.textContent = label;
-    btn.addEventListener('click', () => onPreset(key));
-    grid.appendChild(btn);
+    extraRow.appendChild(pillBtn(label, { onClick: () => onPreset(key) }));
   }
-  container.appendChild(grid);
+  container.appendChild(extraRow);
 
-  const controls = document.createElement('div');
-  controls.className = 'camera-controls';
-
-  const tourBtn = document.createElement('button');
-  tourBtn.textContent = 'Cinematic tour';
-  tourBtn.addEventListener('click', onTour);
-  controls.appendChild(tourBtn);
+  const advRow = document.createElement('div');
+  advRow.className = 'camera-row';
+  advRow.appendChild(pillBtn('Cinematic tour', { onClick: onTour }));
 
   const axisSelect = document.createElement('select');
   [['none', 'Free orbit'], ['x', 'Lock vertical'], ['y', 'Lock horizontal']].forEach(([value, label]) => {
@@ -99,14 +98,8 @@ export function renderCameraBar(container, { axisLock, autoOrbit, dragMode, onPr
     axisSelect.appendChild(opt);
   });
   axisSelect.addEventListener('change', () => onAxisLock(axisSelect.value));
-  controls.appendChild(axisSelect);
+  advRow.appendChild(axisSelect);
 
-  const autoBtn = document.createElement('button');
-  autoBtn.className = `pill${autoOrbit ? ' active' : ''}`;
-  autoBtn.textContent = 'Auto-orbit';
-  autoBtn.setAttribute('aria-pressed', String(autoOrbit));
-  autoBtn.addEventListener('click', () => onAutoOrbit(!autoOrbit));
-  controls.appendChild(autoBtn);
-
-  container.appendChild(controls);
+  advRow.appendChild(pillBtn('Auto-orbit', { active: autoOrbit, onClick: () => onAutoOrbit(!autoOrbit) }));
+  container.appendChild(advRow);
 }

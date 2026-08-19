@@ -12,7 +12,7 @@ const COLLAPSE_DELAY_MS = 700;
 // whether a pointerdown starts a drag (lets buttons/selects keep working).
 // Window-level move/up listeners make this robust even when pointer capture
 // is unavailable or the pointer leaves the handle mid-drag.
-function makeDraggable(element, { storageKey, isHandle, handleEl = element }) {
+export function makeDraggable(element, { storageKey, isHandle, handleEl = element }) {
   function clamp(x, y) {
     const rect = element.getBoundingClientRect();
     return {

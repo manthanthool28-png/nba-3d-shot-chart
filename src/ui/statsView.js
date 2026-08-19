@@ -314,23 +314,68 @@ function renderTypeMix(el, shots) {
   });
 }
 
-export function renderStatsView(container, { shots, dataset, colorOpts, onClose }) {
+export function renderStatsView(container, { shots, dataset, colorOpts, filters, onFilterChange, onOpenTable, onClose }) {
   container.innerHTML = '';
 
+  // ---- Toolbar: title, filters and actions all live inside the dashboard,
+  // so the floating court controls can stay hidden while it is open. ----
   const header = document.createElement('div');
   header.className = 'stats-header';
   const title = document.createElement('h3');
-  title.textContent = `${dataset.name} — ${dataset.season} · 2D stat charts`;
+  title.textContent = `${dataset.name} — ${dataset.season}`;
   const note = document.createElement('span');
   note.className = 'stats-note';
-  note.textContent = `${shots.length} shots in the current filter · raw data in ⚙ → Table view`;
+  note.textContent = `${shots.length} shots in the current filter`;
+
+  const actions = document.createElement('div');
+  actions.className = 'stats-actions';
+  if (onOpenTable) {
+    const tableBtn = document.createElement('button');
+    tableBtn.textContent = 'Table view';
+    tableBtn.title = 'See the raw shot-by-shot data as a sortable table';
+    tableBtn.addEventListener('click', onOpenTable);
+    actions.appendChild(tableBtn);
+  }
   const closeBtn = document.createElement('button');
   closeBtn.textContent = 'Close';
   closeBtn.addEventListener('click', onClose);
+  actions.appendChild(closeBtn);
+
   header.appendChild(title);
   header.appendChild(note);
-  header.appendChild(closeBtn);
+  header.appendChild(actions);
   container.appendChild(header);
+
+  // ---- Filter row (mirrors the court's "Show only" pills) ----
+  if (filters && onFilterChange) {
+    const bar = document.createElement('div');
+    bar.className = 'stats-filterbar';
+    const label = document.createElement('span');
+    label.className = 'stats-filter-label';
+    label.textContent = 'Show only';
+    bar.appendChild(label);
+
+    const pill = (text, active, patch, tip) => {
+      const b = document.createElement('button');
+      b.className = `pill${active ? ' active' : ''}`;
+      b.textContent = text;
+      if (tip) b.title = tip;
+      b.setAttribute('aria-pressed', String(active));
+      b.addEventListener('click', () => onFilterChange(patch));
+      return b;
+    };
+
+    bar.appendChild(pill('All', filters.zoneGroup === 'all' && filters.outcome === 'all',
+      { zoneGroup: 'all', outcome: 'all' }, 'Show every shot'));
+    for (const [key, group] of Object.entries(ZONE_GROUPS)) {
+      bar.appendChild(pill(group.label, filters.zoneGroup === key, { zoneGroup: key }));
+    }
+    bar.appendChild(pill('Made', filters.outcome === 'made',
+      { outcome: filters.outcome === 'made' ? 'all' : 'made' }, 'Only shots that went in'));
+    bar.appendChild(pill('Missed', filters.outcome === 'missed',
+      { outcome: filters.outcome === 'missed' ? 'all' : 'missed' }, 'Only shots that missed'));
+    container.appendChild(bar);
+  }
 
   renderKpis(container, shots);
 
@@ -342,13 +387,256 @@ export function renderStatsView(container, { shots, dataset, colorOpts, onClose 
   // grid gave the first card the full row width, which parked its chart
   // off-screen and shrank the rest.
   const panels = [
-    ['Shot chart', 'Every attempt in the current filter', (el) => renderCourtCard(el, shots, colorOpts)],
+    ['Shot chart', 'Every attempt — where it was taken from', (el) => renderCourtCard(el, shots, colorOpts)],
+    ['Shot density', 'Brighter = more attempts from that spot', (el) => renderDensity(el, shots)],
     ['eFG% by zone', 'White tick = league average', (el) => renderZoneEfg(el, shots, dataset.leagueEfg)],
+    ['Made vs missed by zone', 'Counts, not percentages', (el) => renderMadeMissed(el, shots)],
     ['Where the shots come from', 'Share of attempts by zone', (el) => renderZoneShare(el, shots)],
+    ['Volume vs efficiency', 'How often vs how well, per zone', (el) => renderVolumeEfficiency(el, shots)],
     ['FG% by quarter', null, (el) => renderQuarters(el, shots)],
+    ['FG% by month', 'Months with under 10 attempts hidden', (el) => renderMonthlyTrend(el, shots)],
     ['FG% by distance', '3 ft bins · bins under 5 attempts hidden', (el) => renderDistance(el, shots)],
+    ['Attempts by distance', 'How many shots from each range', (el) => renderDistanceHistogram(el, shots)],
+    ['Home vs away', null, (el) => renderHomeAway(el, shots)],
     ['Shot types', 'Attempts · FG% at the bar end', (el) => renderTypeMix(el, shots)],
   ];
   const cardEls = panels.map(([title, sub]) => card(grid, title, sub));
   panels.forEach(([, , fill], i) => fill(cardEls[i]));
+}
+
+// ============================================================
+// Additional 2D views
+// ============================================================
+
+const COURT_HALF_W = 25;   // x: -25..25 ft
+const COURT_LEN = 47;      // z: 0..47 ft (baseline to half-court)
+
+// ---- Shot-density heatmap (square bins over the half court) ----
+function renderDensity(el, shots) {
+  const BIN = 2.5; // ft
+  const height = 300;
+  const { svg, width } = svgIn(el, height);
+  if (!shots.length) { svgLabel(svg, 8, 20, 'No shots match the current filters'); return; }
+
+  const pad = 16;
+  const scale = Math.min((width - pad * 2) / (COURT_HALF_W * 2), (height - pad * 2) / COURT_LEN);
+  const ox = width / 2;
+  const oy = pad;
+  const g = svg.append('g').attr('transform', `translate(${ox},${oy}) scale(${scale})`);
+
+  const bins = new Map();
+  for (const s of shots) {
+    const bx = Math.floor(s.x / BIN) * BIN;
+    const bz = Math.floor(s.z / BIN) * BIN;
+    const k = `${bx}:${bz}`;
+    const cur = bins.get(k) ?? { bx, bz, n: 0, made: 0 };
+    cur.n += 1;
+    if (s.made) cur.made += 1;
+    bins.set(k, cur);
+  }
+  const cells = [...bins.values()];
+  const maxN = d3.max(cells, (c) => c.n) || 1;
+  const color = d3.scaleSequential(d3.interpolateInferno).domain([0, maxN]);
+
+  for (const c of cells) {
+    g.append('rect')
+      .attr('x', c.bx).attr('y', c.bz).attr('width', BIN).attr('height', BIN)
+      .attr('fill', color(c.n)).attr('stroke', 'none')
+      .on('mouseenter', (event) => showTip(event, `<strong>${c.n} attempts</strong> here<br>${pct(c.made / c.n)} made`))
+      .on('mouseleave', hideTip);
+  }
+
+  // Court outline over the bins for orientation
+  const line = (pts) => g.append('path').attr('d', d3.line()(pts))
+    .attr('fill', 'none').attr('stroke', INK.muted).attr('stroke-width', 0.3).attr('opacity', 0.9);
+  line([[-25, 0], [-25, COURT_LEN], [25, COURT_LEN], [25, 0], [-25, 0]]);
+  line([[-8, 0], [-8, 19], [8, 19], [8, 0]]);
+  g.append('circle').attr('cx', 0).attr('cy', 5.25).attr('r', 0.75)
+    .attr('fill', 'none').attr('stroke', '#f0a44f').attr('stroke-width', 0.35);
+  const arc = d3.arc().innerRadius(23.75).outerRadius(23.75).startAngle(-Math.PI / 2 - 1.18).endAngle(Math.PI / 2 + 1.18);
+  g.append('path').attr('d', arc()).attr('transform', 'translate(0,5.25)')
+    .attr('fill', 'none').attr('stroke', INK.muted).attr('stroke-width', 0.3);
+
+  // Legend: light = few attempts, dark = many
+  const lw = 120;
+  const lg = svg.append('g').attr('transform', `translate(8,${height - 16})`);
+  const gradId = `dens-${Math.random().toString(36).slice(2, 8)}`;
+  const grad = svg.append('defs').append('linearGradient').attr('id', gradId);
+  grad.append('stop').attr('offset', '0%').attr('stop-color', color(0));
+  grad.append('stop').attr('offset', '100%').attr('stop-color', color(maxN));
+  lg.append('rect').attr('width', lw).attr('height', 8).attr('rx', 2).attr('fill', `url(#${gradId})`);
+  svgLabel(svg, 8, height - 20, 'fewer', { size: 12 });
+  svgLabel(svg, 8 + lw, height - 20, `${maxN} attempts`, { size: 12, anchor: 'end' });
+}
+
+// ---- Attempts by distance (frequency histogram) ----
+function renderDistanceHistogram(el, shots) {
+  const BIN = 2;
+  const plotH = 130;
+  const height = plotH + 34;
+  const { svg, width } = svgIn(el, height);
+  const bins = d3.groups(shots, (s) => Math.min(Math.floor(s.distanceFt / BIN) * BIN, 34))
+    .map(([d, g]) => ({ d, n: g.length }))
+    .sort((a, b) => a.d - b.d);
+  if (!bins.length) { svgLabel(svg, 8, 20, 'No shots match the current filters'); return; }
+
+  const x = d3.scaleBand().domain(bins.map((b) => b.d)).range([40, width - 10]).padding(0.18);
+  const y = d3.scaleLinear().domain([0, d3.max(bins, (b) => b.n)]).nice().range([plotH, 12]);
+
+  y.ticks(4).forEach((t) => {
+    svg.append('line').attr('x1', 40).attr('x2', width - 10).attr('y1', y(t)).attr('y2', y(t))
+      .attr('stroke', INK.grid).attr('stroke-width', 1);
+    svgLabel(svg, 34, y(t) + 4, String(t), { anchor: 'end', size: 12, tabular: true });
+  });
+
+  bins.forEach((b) => {
+    svg.append('rect')
+      .attr('x', x(b.d)).attr('y', y(b.n)).attr('width', x.bandwidth())
+      .attr('height', Math.max(y(0) - y(b.n), 1)).attr('rx', 2).attr('fill', SERIES.blue)
+      .on('mouseenter', (event) => showTip(event, `<strong>${b.d}–${b.d + BIN} ft</strong>: ${b.n} attempts`))
+      .on('mouseleave', hideTip);
+  });
+  [0, 10, 20, 30].forEach((t) => {
+    const b = bins.find((v) => v.d === t);
+    if (b) svgLabel(svg, x(t) + x.bandwidth() / 2, plotH + 22, `${t} ft`, { anchor: 'middle', size: 12, tabular: true });
+  });
+}
+
+// ---- FG% trend by month ----
+function renderMonthlyTrend(el, shots) {
+  const plotH = 130;
+  const height = plotH + 34;
+  const { svg, width } = svgIn(el, height);
+  const months = d3.groups(shots, (s) => s.date.slice(0, 6))
+    .map(([m, g]) => ({ m, n: g.length, fg: fgPct(g) }))
+    .filter((r) => r.n >= 10)
+    .sort((a, b) => (a.m < b.m ? -1 : 1));
+  if (months.length < 2) { svgLabel(svg, 8, 20, 'Not enough months in this filter'); return; }
+
+  const x = d3.scalePoint().domain(months.map((r) => r.m)).range([44, width - 12]).padding(0.5);
+  const y = d3.scaleLinear().domain([0, Math.max(0.7, d3.max(months, (r) => r.fg) * 1.15)]).range([plotH, 12]);
+
+  [0.25, 0.5].forEach((t) => {
+    svg.append('line').attr('x1', 44).attr('x2', width - 12).attr('y1', y(t)).attr('y2', y(t))
+      .attr('stroke', INK.grid).attr('stroke-width', 1);
+    svgLabel(svg, 38, y(t) + 4, pct(t, 0), { anchor: 'end', size: 12, tabular: true });
+  });
+
+  const line = d3.line().x((r) => x(r.m)).y((r) => y(r.fg));
+  svg.append('path').attr('d', line(months)).attr('fill', 'none')
+    .attr('stroke', SERIES.blue).attr('stroke-width', 2);
+
+  months.forEach((r) => {
+    svg.append('circle').attr('cx', x(r.m)).attr('cy', y(r.fg)).attr('r', 4)
+      .attr('fill', SERIES.blue).attr('stroke', '#101016').attr('stroke-width', 2)
+      .on('mouseenter', (event) => showTip(event, `<strong>${r.m.slice(4, 6)}/${r.m.slice(0, 4)}</strong>: ${pct(r.fg)} FG on ${r.n} attempts`))
+      .on('mouseleave', hideTip);
+    svgLabel(svg, x(r.m), plotH + 22, r.m.slice(4, 6), { anchor: 'middle', size: 12, tabular: true });
+  });
+}
+
+// ---- Volume vs efficiency by zone (scatter) ----
+function renderVolumeEfficiency(el, shots) {
+  const plotH = 150;
+  const height = plotH + 34;
+  const { svg, width } = svgIn(el, height);
+  const rows = Object.entries(ZONE_GROUPS).map(([key, group]) => {
+    const g = shots.filter((s) => zoneGroupOf(s) === key);
+    return { key, label: group.label, n: g.length, efg: efgPct(g) };
+  }).filter((r) => r.n > 0);
+  if (!rows.length) { svgLabel(svg, 8, 20, 'No shots match the current filters'); return; }
+
+  const x = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.n) * 1.15]).nice().range([50, width - 70]);
+  const y = d3.scaleLinear().domain([0, Math.max(0.75, d3.max(rows, (r) => r.efg) * 1.3)]).range([plotH, 20]);
+
+  [0.25, 0.5, 0.75].forEach((t) => {
+    svg.append('line').attr('x1', 50).attr('x2', width - 70).attr('y1', y(t)).attr('y2', y(t))
+      .attr('stroke', INK.grid).attr('stroke-width', 1);
+    svgLabel(svg, 44, y(t) + 4, pct(t, 0), { anchor: 'end', size: 12, tabular: true });
+  });
+
+  rows.forEach((r) => {
+    svg.append('circle').attr('cx', x(r.n)).attr('cy', y(r.efg)).attr('r', 9)
+      .attr('fill', ZONE_COLORS[r.key]).attr('stroke', '#101016').attr('stroke-width', 2)
+      .on('mouseenter', (event) => showTip(event, `<strong>${r.label}</strong>: ${r.n} attempts at ${pct(r.efg)} eFG`))
+      .on('mouseleave', hideTip);
+    // Label above the dot so neighbouring zones don't overprint each other.
+    svgLabel(svg, x(r.n), y(r.efg) - 14, r.label, { anchor: 'middle', fill: INK.secondary, size: 13 });
+  });
+  svgLabel(svg, (width + 50 - 70) / 2, plotH + 24, 'attempts →', { anchor: 'middle', size: 12 });
+}
+
+// ---- Made vs missed per zone (stacked) ----
+function renderMadeMissed(el, shots) {
+  const rows = Object.entries(ZONE_GROUPS).map(([key, group]) => {
+    const g = shots.filter((s) => zoneGroupOf(s) === key);
+    return { label: group.label, made: g.filter((s) => s.made).length, missed: g.filter((s) => !s.made).length };
+  });
+  const rowH = 34;
+  const mL = 84;
+  const height = rows.length * rowH + 30;
+  const { svg, width } = svgIn(el, height);
+  const maxTotal = d3.max(rows, (r) => r.made + r.missed) || 1;
+  const x = d3.scaleLinear().domain([0, maxTotal]).range([mL, width - 16]);
+
+  rows.forEach((r, i) => {
+    const y = i * rowH + 8;
+    svgLabel(svg, mL - 8, y + 15, r.label, { anchor: 'end', fill: INK.secondary });
+    const wMade = x(r.made) - x(0);
+    svg.append('rect').attr('x', x(0)).attr('y', y).attr('width', Math.max(wMade, 0)).attr('height', 20)
+      .attr('rx', 3).attr('fill', '#4df2a3')
+      .on('mouseenter', (event) => showTip(event, `<strong>${r.label}</strong>: ${r.made} made`))
+      .on('mouseleave', hideTip);
+    const wMiss = x(r.missed) - x(0);
+    svg.append('rect').attr('x', x(0) + wMade + 2).attr('y', y).attr('width', Math.max(wMiss - 2, 0)).attr('height', 20)
+      .attr('rx', 3).attr('fill', '#ff7085')
+      .on('mouseenter', (event) => showTip(event, `<strong>${r.label}</strong>: ${r.missed} missed`))
+      .on('mouseleave', hideTip);
+  });
+
+  const ly = rows.length * rowH + 18;
+  svg.append('circle').attr('cx', mL).attr('cy', ly - 4).attr('r', 5).attr('fill', '#4df2a3');
+  svgLabel(svg, mL + 10, ly, 'Made', { fill: INK.secondary, size: 13 });
+  svg.append('circle').attr('cx', mL + 66).attr('cy', ly - 4).attr('r', 5).attr('fill', '#ff7085');
+  svgLabel(svg, mL + 76, ly, 'Missed', { fill: INK.secondary, size: 13 });
+}
+
+// ---- Home vs away ----
+function renderHomeAway(el, shots) {
+  const rows = [
+    { label: 'Home', g: shots.filter((s) => s.isHome) },
+    { label: 'Away', g: shots.filter((s) => !s.isHome) },
+  ].map((r) => ({ label: r.label, n: r.g.length, fg: fgPct(r.g), efg: efgPct(r.g) }));
+  const plotH = 130;
+  const height = plotH + 34;
+  const { svg, width } = svgIn(el, height);
+  if (!rows.some((r) => r.n)) { svgLabel(svg, 8, 20, 'No shots match the current filters'); return; }
+
+  const x0 = d3.scaleBand().domain(rows.map((r) => r.label)).range([44, width - 12]).paddingInner(0.35).paddingOuter(0.2);
+  const x1 = d3.scaleBand().domain(['FG%', 'eFG%']).range([0, x0.bandwidth()]).padding(0.18);
+  const y = d3.scaleLinear().domain([0, Math.max(0.7, d3.max(rows, (r) => r.efg) * 1.2)]).range([plotH, 12]);
+
+  [0.25, 0.5].forEach((t) => {
+    svg.append('line').attr('x1', 44).attr('x2', width - 12).attr('y1', y(t)).attr('y2', y(t))
+      .attr('stroke', INK.grid).attr('stroke-width', 1);
+    svgLabel(svg, 38, y(t) + 4, pct(t, 0), { anchor: 'end', size: 12, tabular: true });
+  });
+
+  rows.forEach((r) => {
+    [['FG%', r.fg, SERIES.blue], ['eFG%', r.efg, SERIES.aqua]].forEach(([k, v, col]) => {
+      svg.append('rect')
+        .attr('x', x0(r.label) + x1(k)).attr('y', y(v))
+        .attr('width', x1.bandwidth()).attr('height', Math.max(y(0) - y(v), 1))
+        .attr('rx', 3).attr('fill', col)
+        .on('mouseenter', (event) => showTip(event, `<strong>${r.label} ${k}</strong>: ${pct(v)} on ${r.n} attempts`))
+        .on('mouseleave', hideTip);
+    });
+    svgLabel(svg, x0(r.label) + x0.bandwidth() / 2, plotH + 22, `${r.label} (${r.n})`, { anchor: 'middle', size: 13 });
+  });
+
+  const ly = 10;
+  svg.append('rect').attr('x', width - 108).attr('y', ly).attr('width', 10).attr('height', 10).attr('rx', 2).attr('fill', SERIES.blue);
+  svgLabel(svg, width - 94, ly + 9, 'FG%', { fill: INK.secondary, size: 12 });
+  svg.append('rect').attr('x', width - 54).attr('y', ly).attr('width', 10).attr('height', 10).attr('rx', 2).attr('fill', SERIES.aqua);
+  svgLabel(svg, width - 40, ly + 9, 'eFG%', { fill: INK.secondary, size: 12 });
 }

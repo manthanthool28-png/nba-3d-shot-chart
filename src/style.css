@@ -150,13 +150,18 @@ html, body {
   top: 84px; /* below the title band */
   left: 16px;
   z-index: 5;
+  cursor: grab;      /* draggable out of the way of the court */
+  touch-action: none;
 }
+#overlay-wrap.dragging, #callouts-wrap.dragging { cursor: grabbing; }
 
 #callouts-wrap {
   position: fixed;
   top: 84px; /* below the title band */
   left: 402px;
   z-index: 5;
+  cursor: grab;
+  touch-action: none;
 }
 
 /* ---------- Overlay: stats + legend ---------- */
@@ -417,26 +422,45 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  align-items: flex-end;
+  gap: 7px;
+  align-items: stretch;
+  width: max-content;
+  max-width: 42vw;
   cursor: grab; /* whole panel drags, except its buttons/selects */
   user-select: none;
   touch-action: none;
 }
+#camera-bar .camera-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+#camera-bar .camera-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #c2c8d6;
+  white-space: nowrap;
+}
+#camera-bar .camera-title .grip { color: #c2c8d6; margin-right: 2px; }
+#camera-bar .camera-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+#camera-bar .camera-sublabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #b3b1a8;
+  margin-right: auto;
+  white-space: nowrap;
+}
 #camera-bar.dragging { cursor: grabbing; }
 #camera-bar .camera-drag-label .grip { color: #c2c8d6; font-size: 16px; }
-#camera-bar .preset-grid {
-  display: grid;
-  grid-template-columns: repeat(4, auto);
-  gap: 5px;
-}
-#camera-bar .camera-controls {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap; /* wraps instead of colliding with the filter dock */
-  justify-content: flex-end;
-}
-#camera-bar { max-width: min(46vw, 620px); }
 
 /* ---------- Timeline ---------- */
 #timeline-bar {
@@ -548,7 +572,9 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
 
 /* While the dashboard is open, hide the Compare / 2D stats launcher buttons
    (they float above it); the filter bar stays for live filtering. */
-body.stats-open #quick-row { display: none; }
+body.stats-open #bottom-left-stack,
+body.stats-open #camera-bar,
+body.stats-open #player-card { display: none; }
 .stats-header {
   display: flex;
   flex-wrap: wrap; /* on narrow screens the note drops to its own line */
@@ -561,6 +587,23 @@ body.stats-open #quick-row { display: none; }
 .stats-header .stats-note { min-width: 220px; }
 .stats-header h3 { margin: 0; font-size: 19px; }
 .stats-header .stats-note { flex: 1; font-size: 15px; color: #b3b1a8; }
+.stats-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.stats-filterbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 0 2px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  margin-top: 8px;
+}
+.stats-filter-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #b3b1a8;
+  margin-right: 2px;
+}
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -604,9 +647,10 @@ body.stats-open #quick-row { display: none; }
 #table-view-wrap {
   position: fixed;
   inset: 16px;
-  z-index: 15;
+  z-index: 24; /* above the 2D dashboard when opened from its toolbar */
   overflow: auto;
   padding: 16px;
+  background: #101016; /* solid — charts behind it must not bleed through */
 }
 #table-view-wrap table { width: 100%; border-collapse: collapse; font-size: 15px; }
 #table-view-wrap th, #table-view-wrap td { padding: 6px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); }
