@@ -733,5 +733,30 @@ body.high-contrast .pill.active {
 .stat-chip[data-stat="orange"] { background: #f0a44f; }
 .stat-chip[data-stat="violet"] { background: #a689f0; }
 .stat-chip[data-stat="aqua"]   { background: #4fc9bb; }
+/* Zone chips share the exact colours the court filters use */
+.stat-chip[data-stat="zone-paint"] { background: #4f9bf0; }
+.stat-chip[data-stat="zone-mid"]   { background: #c58bf0; }
+.stat-chip[data-stat="zone-three"] { background: #f0a44f; }
+
+/* ---------- Zone filter pills keep their own colour ---------- */
+.pill.zone-pill { display: inline-flex; align-items: center; gap: 7px; }
+.pill.zone-pill .zone-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--zone-color);
+  flex-shrink: 0;
+}
+.pill.zone-pill.active {
+  background: var(--zone-color);
+  border-color: var(--zone-color);
+  color: #0a0f14;
+}
+.pill.zone-pill.active .zone-dot {
+  background: rgba(10, 15, 20, 0.55);
+}
 
 .kpi .l { margin-top: 6px; }
+
+/* Visual cue while a dragged panel is latched to an edge or another panel */
+.snapped { outline: 2px solid rgba(77, 242, 163, 0.85); outline-offset: 2px; }

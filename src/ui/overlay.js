@@ -1,6 +1,7 @@
 import { legendFor } from '../scene/colorEncoding.js';
 import { ZONE_GROUPS } from '../data/zones.js';
 import { statChip } from './statGlossary.js';
+import { ZONE_COLORS } from '../data/zoneColors.js';
 
 export function renderOverlay(container, { name, season, seasonType, shownCount, totalCount, fgPct, colorMode, palette, teamColor, zoneEfg, leagueEfg, compareLabel }) {
   container.innerHTML = '';
@@ -55,6 +56,7 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
       const fill = document.createElement('div');
       fill.className = 'percentile-fill';
       fill.style.width = `${Math.min(playerVal / 0.7, 1) * 100}%`;
+      fill.style.background = ZONE_COLORS[key]; // same colour as this zone's filter
       const leagueMark = document.createElement('div');
       leagueMark.className = 'percentile-league';
       leagueMark.style.left = `${Math.min(leagueVal / 0.7, 1) * 100}%`;

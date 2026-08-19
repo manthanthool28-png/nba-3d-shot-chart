@@ -5,6 +5,7 @@ import { periodLabel } from '../data/stats.js';
 import { legendFor } from '../scene/colorEncoding.js';
 import { createSplitView2D } from './splitView2d.js';
 import { statChip } from './statGlossary.js';
+import { ZONE_COLORS } from '../data/zoneColors.js';
 
 // 2D stat-chart dashboard for readers who think in classic NBA stats.
 // Renders against the same filtered shot slice as the 3D view; the ⚙ table
@@ -14,7 +15,6 @@ import { statChip } from './statGlossary.js';
 // (worst adjacent CVD ΔE 41.3, all >= 3:1 contrast on #14141c).
 const INK = { primary: '#ffffff', secondary: '#d5d4cb', muted: '#b3b1a8', grid: '#2c2c2a', baseline: '#383835' };
 const SERIES = { blue: '#3987e5', aqua: '#199e70', yellow: '#c98500' };
-const ZONE_COLORS = { paint: SERIES.blue, mid: SERIES.aqua, three: SERIES.yellow };
 
 const FONT = 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;';
 
@@ -162,7 +162,7 @@ function renderZoneEfg(el, shots, leagueEfg) {
     svgLabel(svg, mL - 8, y + 13, r.label, { anchor: 'end', fill: INK.secondary });
     svg.append('rect')
       .attr('x', x(0)).attr('y', y).attr('width', Math.max(x(r.efg) - x(0), 1)).attr('height', 18)
-      .attr('rx', 3).attr('fill', SERIES.blue)
+      .attr('rx', 3).attr('fill', ZONE_COLORS[r.key])
       .on('mouseenter', (event) => showTip(event, `<strong>${r.label}</strong>: ${pct(r.efg)} eFG on ${r.att} attempts${r.league != null ? `<br>League avg ${pct(r.league)}` : ''}`))
       .on('mouseleave', hideTip);
     if (r.league != null) {

@@ -8,11 +8,51 @@ const CAMERA_POS_KEY = 'shotchart.camerabar.pos';
 const AUTOHIDE_KEY = 'shotchart.menu.autohide';
 const COLLAPSE_DELAY_MS = 700;
 
+// Every draggable panel registers here so panels can snap to each other.
+const draggables = [];
+
+const SNAP = 28;      // how close before a panel latches on (px)
+const MARGIN = 16;    // resting gap from the viewport edge
+const TOP_MARGIN = 84; // below the title band
+const GAP = 10;       // gap when a panel parks beside/under another
+
+// Pick the nearest candidate within SNAP, otherwise keep the raw value.
+function snapTo(value, candidates) {
+  let best = value;
+  let bestDist = SNAP;
+  for (const c of candidates) {
+    if (!Number.isFinite(c)) continue;
+    const d = Math.abs(value - c);
+    if (d < bestDist) { bestDist = d; best = c; }
+  }
+  return best;
+}
+
+// Auto-layout: snap the dragged box to the viewport edges/centre and to the
+// edges of the other panels, so things come to rest neatly aligned instead of
+// floating at arbitrary offsets.
+function snapPosition(element, x, y, w, h) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const xs = [MARGIN, vw - w - MARGIN, (vw - w) / 2];
+  const ys = [TOP_MARGIN, MARGIN, vh - h - MARGIN, (vh - h) / 2];
+
+  for (const other of draggables) {
+    if (other === element || !other.isConnected) continue;
+    const r = other.getBoundingClientRect();
+    if (!r.width || getComputedStyle(other).display === 'none') continue;
+    xs.push(r.left, r.right - w, r.right + GAP, r.left - w - GAP);
+    ys.push(r.top, r.bottom - h, r.bottom + GAP, r.top - h - GAP);
+  }
+  return { x: snapTo(x, xs), y: snapTo(y, ys) };
+}
+
 // Drag-anywhere behavior for a fixed-position panel. `isHandle(e)` decides
 // whether a pointerdown starts a drag (lets buttons/selects keep working).
 // Window-level move/up listeners make this robust even when pointer capture
 // is unavailable or the pointer leaves the handle mid-drag.
 export function makeDraggable(element, { storageKey, isHandle, handleEl = element }) {
+  draggables.push(element);
   function clamp(x, y) {
     const rect = element.getBoundingClientRect();
     return {
@@ -40,7 +80,11 @@ export function makeDraggable(element, { storageKey, isHandle, handleEl = elemen
 
   function onDragMove(e) {
     if (!drag) return;
-    const { x, y } = clamp(e.clientX - drag.dx, e.clientY - drag.dy);
+    const rect = element.getBoundingClientRect();
+    const snapped = snapPosition(element, e.clientX - drag.dx, e.clientY - drag.dy, rect.width, rect.height);
+    const { x, y } = clamp(snapped.x, snapped.y);
+    element.classList.toggle('snapped',
+      Math.abs(x - (e.clientX - drag.dx)) > 0.5 || Math.abs(y - (e.clientY - drag.dy)) > 0.5);
     applyPos(x, y);
     e.preventDefault();
   }
@@ -49,6 +93,7 @@ export function makeDraggable(element, { storageKey, isHandle, handleEl = elemen
     if (!drag) return;
     drag = null;
     handleEl.classList.remove('dragging');
+    element.classList.remove('snapped');
     window.removeEventListener('pointermove', onDragMove);
     window.removeEventListener('pointerup', onDragEnd);
     const rect = element.getBoundingClientRect();

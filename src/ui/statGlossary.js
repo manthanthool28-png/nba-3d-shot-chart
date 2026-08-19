@@ -39,7 +39,9 @@ function hideDef() {
 const STAT_COLOR = {
   'FG': 'blue', 'FGA': 'blue', 'FG%': 'blue',
   'eFG%': 'green',
-  '3PT': 'orange', '3P%': 'orange',
+  // 3PT keeps the same orange the court zone uses everywhere else.
+  '3PT': 'zone-three', '3P%': 'zone-three',
+  'Paint': 'zone-paint', 'Mid-Range': 'zone-mid',
   'PTS': 'violet', 'AST': 'aqua',
   'Points per shot': 'violet',
 };

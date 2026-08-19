@@ -1,5 +1,6 @@
 import { ZONE_GROUPS } from '../data/zones.js';
 import { ACTION_TYPE_LABELS } from '../data/actionTypes.js';
+import { ZONE_COLORS } from '../data/zoneColors.js';
 
 // Collapsed by default; survives re-renders so the bar doesn't snap shut on
 // every filter change.
@@ -10,10 +11,21 @@ function fmtDate(yyyymmdd) {
   return `${yyyymmdd.slice(4, 6)}/${yyyymmdd.slice(6, 8)}`;
 }
 
-function pill(label, active, onClick, disabled = false, title = '') {
+function pill(label, active, onClick, disabled = false, title = '', zoneKey = null) {
   const btn = document.createElement('button');
-  btn.className = `pill${active ? ' active' : ''}`;
-  btn.textContent = label;
+  btn.className = `pill${active ? ' active' : ''}${zoneKey ? ' zone-pill' : ''}`;
+  if (zoneKey) {
+    // Each zone keeps its own colour, so an active 3PT filter reads orange
+    // rather than the generic green.
+    btn.dataset.zone = zoneKey;
+    btn.style.setProperty('--zone-color', ZONE_COLORS[zoneKey]);
+    const dot = document.createElement('span');
+    dot.className = 'zone-dot';
+    btn.appendChild(dot);
+    btn.appendChild(document.createTextNode(label));
+  } else {
+    btn.textContent = label;
+  }
   btn.disabled = disabled;
   if (title) btn.title = title;
   btn.setAttribute('aria-pressed', String(active));
@@ -67,7 +79,7 @@ export function renderFilterBar(container, { subjectOptions, seasonOptions, data
   const mainRow = groupRow('Show only');
   mainRow.appendChild(pill('All', filters.zoneGroup === 'all', () => onFilterChange({ zoneGroup: 'all' }), false, 'Show shots from everywhere on the court'));
   for (const [key, group] of Object.entries(ZONE_GROUPS)) {
-    mainRow.appendChild(pill(group.label, filters.zoneGroup === key, () => onFilterChange({ zoneGroup: key }), false, ZONE_HINTS[key]));
+    mainRow.appendChild(pill(group.label, filters.zoneGroup === key, () => onFilterChange({ zoneGroup: key }), false, ZONE_HINTS[key], key));
   }
   mainRow.appendChild(pill('Made', filters.outcome === 'made', () => onFilterChange({ outcome: filters.outcome === 'made' ? 'all' : 'made' }), false, 'Only shots that went in'));
   mainRow.appendChild(pill('Missed', filters.outcome === 'missed', () => onFilterChange({ outcome: filters.outcome === 'missed' ? 'all' : 'missed' }), false, 'Only shots that missed'));
