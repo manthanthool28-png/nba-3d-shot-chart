@@ -47,10 +47,10 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
       const leagueVal = leagueEfg[key] ?? 0;
       const row = document.createElement('div');
       row.className = 'percentile-bar';
-      // Abbreviated zones (3PT) become colour buttons; spelled-out ones stay plain.
+      // Every zone gets its own colour chip, so Paint / Mid-Range / 3PT are
+      // recognisable by colour alone and match their filter buttons.
       const label = document.createElement('span');
-      if (key === 'three') label.appendChild(statChip('3PT'));
-      else label.textContent = group.label;
+      label.appendChild(statChip(group.label));
       const track = document.createElement('div');
       track.className = 'percentile-track';
       const fill = document.createElement('div');

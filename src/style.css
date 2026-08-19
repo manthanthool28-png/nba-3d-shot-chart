@@ -197,7 +197,7 @@ html, body {
 
 #overlay .percentile-bar {
   display: grid;
-  grid-template-columns: 78px 1fr 46px;
+  grid-template-columns: 104px 1fr 46px;
   gap: 6px;
   align-items: center;
   font-size: 15px;
@@ -260,7 +260,14 @@ html, body {
   z-index: 20;
   padding: 16px;
   width: 310px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
 }
+
+/* While settings is open it owns the right edge — the camera panel drops its
+   expanded rows so the two never sit on top of each other. */
+body.settings-open #camera-bar .camera-row:nth-of-type(n + 3),
+body.settings-open #camera-bar .camera-header .more-toggle { display: none; }
 #settings-panel h3 {
   font-size: 15px;
   text-transform: uppercase;
@@ -351,6 +358,10 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
 
 #filter-bar {
   padding: 10px 12px;
+  /* Expanding "More filters" grows this panel upward; cap it so it can never
+     climb into the info panels above and scroll instead. */
+  max-height: calc(100vh - 340px);
+  overflow-y: auto;
 }
 
 /* ---------- Menu dock header (drag handle + auto-hide) ---------- */
@@ -429,6 +440,8 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   align-items: stretch;
   width: max-content;
   max-width: 42vw;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
   cursor: grab; /* whole panel drags, except its buttons/selects */
   user-select: none;
   touch-action: none;
@@ -454,6 +467,16 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   justify-content: flex-end;
   flex-wrap: wrap;
 }
+#camera-bar select {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+#camera-bar select:hover { background: rgba(255, 255, 255, 0.16); }
 #camera-bar .camera-sublabel {
   font-size: 12px;
   text-transform: uppercase;
@@ -521,6 +544,8 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   top: 50%;
   right: 16px;
   transform: translateY(-50%);
+  cursor: grab;
+  touch-action: none;
   z-index: 4;
   padding: 8px 10px 10px;
   text-align: center;
@@ -528,6 +553,7 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
   align-items: flex-start;
   gap: 6px;
 }
+#player-card.dragging { cursor: grabbing; }
 #player-card .player-card-canvas canvas {
   display: block;
 }
@@ -727,6 +753,7 @@ body.high-contrast .pill.active {
   border: none;
   vertical-align: baseline;
 }
+.stat-chip { white-space: nowrap; }  /* "Mid-Range" must not wrap mid-word */
 .stat-chip:hover { filter: brightness(1.1); }
 .stat-chip[data-stat="blue"]   { background: #4f9bf0; }
 .stat-chip[data-stat="green"]  { background: #35d48a; }

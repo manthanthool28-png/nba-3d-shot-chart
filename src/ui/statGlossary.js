@@ -8,6 +8,8 @@ export const STAT_GLOSSARY = {
   'FG%': 'Field Goal %: the share of shots that went in',
   'eFG%': 'Effective Field Goal %: shooting efficiency, weighted to account for the extra value of 3-point shots',
   '3PT': 'Three-Point: shots taken from beyond the three-point line',
+  'Paint': 'Paint: the painted area right around the basket, where shots are closest',
+  'Mid-Range': 'Mid-Range: inside the three-point line but away from the basket',
   '3P%': 'Three-Point %: the share of three-point shots that went in',
   'PTS': 'Points: total points scored',
   'AST': 'Assist: a pass that directly leads to a made shot',

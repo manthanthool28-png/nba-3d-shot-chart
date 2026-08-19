@@ -122,6 +122,10 @@ async function main() {
     storageKey: 'shotchart.leftstack.pos',
     isHandle: (e) => !e.target.closest('button, select, a, .stat-chip'),
   });
+  makeDraggable(document.querySelector('#player-card'), {
+    storageKey: 'shotchart.playercard.pos',
+    isHandle: (e) => !e.target.closest('button, select, a'),
+  });
   // Drop stale per-panel positions saved by the earlier free-floating build.
   localStorage.removeItem('shotchart.overlay.pos');
   localStorage.removeItem('shotchart.callouts.pos');
@@ -441,7 +445,12 @@ async function main() {
   }
 
   // ---- Settings panel wiring ----
-  els.settingsToggle.addEventListener('click', () => els.settingsPanel.classList.toggle('hidden'));
+  els.settingsToggle.addEventListener('click', () => {
+    els.settingsPanel.classList.toggle('hidden');
+    // Settings occupies the right edge; let the camera panel collapse so the
+    // two don't sit on top of each other.
+    document.body.classList.toggle('settings-open', !els.settingsPanel.classList.contains('hidden'));
+  });
 
   document.querySelector('#color-mode').value = state.colorMode;
   document.querySelector('#color-mode').addEventListener('change', (e) => { state.colorMode = e.target.value; refresh(); });
