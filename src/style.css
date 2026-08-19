@@ -735,7 +735,7 @@ body.high-contrast .pill.active {
 .stat-chip[data-stat="aqua"]   { background: #4fc9bb; }
 /* Zone chips share the exact colours the court filters use */
 .stat-chip[data-stat="zone-paint"] { background: #4f9bf0; }
-.stat-chip[data-stat="zone-mid"]   { background: #c58bf0; }
+.stat-chip[data-stat="zone-mid"]   { background: #5ce1e6; }
 .stat-chip[data-stat="zone-three"] { background: #f0a44f; }
 
 /* ---------- Zone filter pills keep their own colour ---------- */

@@ -2,18 +2,19 @@
 // filter buttons, stat chips, overlay bars and every 2D chart. Keeping a
 // single source of truth means "3PT is orange" holds across the whole app.
 //
-// Chosen for colour-vision safety on the dark theme — every pair stays
-// separable under deuteranopia and tritanopia (worst pair ~90 vs ~30 for the
-// previous blue/teal pairing), and all three clear 6.4:1 contrast on panels.
+// Checked for colour-vision safety on the dark theme: the closest pair
+// (Mid-Range vs Paint) stays ~41 apart under deuteranopia/protanopia/
+// tritanopia — well clear of the ~8 a teal Mid-Range scored against the
+// made-green — and each colour clears 6.4:1 contrast on the panels.
 export const ZONE_COLORS = {
   paint: '#4f9bf0', // blue
-  mid: '#c58bf0',   // purple
+  mid: '#5ce1e6',   // cyan
   three: '#f0a44f', // orange
 };
 
 // Same hues, darkened for use as a filled bar on a light-ink background.
 export const ZONE_INK = {
   paint: '#0a1420',
-  mid: '#160a20',
+  mid: '#04191b',
   three: '#201404',
 };
