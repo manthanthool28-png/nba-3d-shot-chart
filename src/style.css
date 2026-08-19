@@ -145,24 +145,27 @@ html, body {
 }
 .collapse-btn:hover { color: #fff; }
 
-#overlay-wrap {
+/* One left column: the info panels always stack under each other and move
+   together, so they can never drift on top of one another. */
+#left-stack {
   position: fixed;
   top: 84px; /* below the title band */
   left: 16px;
   z-index: 5;
-  cursor: grab;      /* draggable out of the way of the court */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 430px;
+  max-height: calc(100vh - 190px);
+  cursor: grab;      /* drag the whole column clear of the court */
   touch-action: none;
 }
-#overlay-wrap.dragging, #callouts-wrap.dragging { cursor: grabbing; }
+#left-stack.dragging { cursor: grabbing; }
 
-#callouts-wrap {
-  position: fixed;
-  top: 84px; /* below the title band */
-  left: 402px;
-  z-index: 5;
-  cursor: grab;
-  touch-action: none;
-}
+#overlay-wrap { position: static; }
+
+#callouts-wrap { position: static; }
 
 /* ---------- Overlay: stats + legend ---------- */
 #overlay {
@@ -704,9 +707,9 @@ body.high-contrast .pill.active {
 .more-toggle:hover { background: none; color: #fff; }
 
 @media (max-width: 900px) {
+  #left-stack { max-width: 78vw; }
   #bottom-left-stack { max-width: 90vw; }
   #camera-bar { bottom: 72px; }
-  #callouts-wrap { display: none; }
 }
 
 /* ---------- Stat abbreviation chips: flat colour buttons ---------- */

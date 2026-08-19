@@ -116,15 +116,15 @@ async function main() {
   const calloutsWrap = document.querySelector('#callouts-wrap');
   makeCollapsible(overlayWrap, els.overlay, { label: 'Stats', side: 'left' });
   makeCollapsible(calloutsWrap, els.callouts, { label: 'Insights', side: 'left' });
-  // Both info panels can be dragged out of the way of the court.
-  makeDraggable(overlayWrap, {
-    storageKey: 'shotchart.overlay.pos',
+  // The two info panels move as ONE column, so they always stay stacked
+  // under each other instead of floating over one another.
+  makeDraggable(document.querySelector('#left-stack'), {
+    storageKey: 'shotchart.leftstack.pos',
     isHandle: (e) => !e.target.closest('button, select, a, .stat-chip'),
   });
-  makeDraggable(calloutsWrap, {
-    storageKey: 'shotchart.callouts.pos',
-    isHandle: (e) => !e.target.closest('button, select, a, .stat-chip'),
-  });
+  // Drop stale per-panel positions saved by the earlier free-floating build.
+  localStorage.removeItem('shotchart.overlay.pos');
+  localStorage.removeItem('shotchart.callouts.pos');
 
   function colorOptions() {
     return { colorMode: state.colorMode, palette: state.palette === 'colorblind' ? 'colorblind' : 'default', teamColor: dataset?.teamColor };
