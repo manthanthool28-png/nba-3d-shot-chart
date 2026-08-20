@@ -43,6 +43,16 @@ function buildFloor() {
   return floor;
 }
 
+// Zone identity is carried by two things: a broad, quiet fill over the area
+// and a bright band along its boundary. The fill alone is not enough — the
+// floor is dark, so a translucent orange over it lands on brown and reads as
+// bare wood, which is exactly how the 3PT area used to disappear into the
+// court. The bands are full-strength colour and settle it at any angle.
+const ZONE_FILL_OPACITY = 0.42;
+const ZONE_BAND_WIDTH = 0.5;   // feet
+const ZONE_BAND_OPACITY = 0.92;
+const ZONE_BAND_Y = 0.008;     // above the fills, below the heat-map at 0.012
+
 // Tint each scoring area with the same colour its filter button uses, so the
 // court itself teaches the Paint / Mid-Range / 3PT split. Real region shapes:
 // the paint rectangle, the two-point area inside the arc, and everything
@@ -100,16 +110,72 @@ function buildZoneFloors() {
   insideHole.closePath();
   three.holes.push(insideHole);
 
-  for (const [shape, color, y] of [[three, ZONE_COLORS.three, 0.017], [mid, ZONE_COLORS.mid, 0.018], [paint, ZONE_COLORS.paint, 0.019]]) {
+  for (const [shape, color, y] of [[three, ZONE_COLORS.three, 0.004], [mid, ZONE_COLORS.mid, 0.005], [paint, ZONE_COLORS.paint, 0.006]]) {
     const mesh = new THREE.Mesh(
       new THREE.ShapeGeometry(shape),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.18, depthWrite: false }),
+      new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: ZONE_FILL_OPACITY,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      }),
     );
-    mesh.rotation.x = -Math.PI / 2;   // shape XY -> court XZ
+    // ShapeGeometry is built in the XY plane. Rotating +90 degrees about X maps
+    // shape-y onto world +z (baseline -> half-court). Rotating -90, the usual
+    // way to lay a plane flat, maps it onto -z and mirrors every region onto
+    // the wrong side of the baseline. The face normal ends up pointing down,
+    // hence DoubleSide.
+    mesh.rotation.x = Math.PI / 2;
     mesh.position.y = y;              // stacked just above the floor
     group.add(mesh);
   }
   return group;
+}
+
+// A flat band of constant width laid along a polyline on the floor.
+//
+// THREE.Line is one device pixel wide on every platform that matters, which is
+// far too faint to mark a zone boundary from a broadcast camera. This builds
+// real geometry instead, so the Paint / Mid-Range / 3PT edges stay legible at
+// any distance.
+function bandFromPoints(points, color, { width = ZONE_BAND_WIDTH, y = ZONE_BAND_Y, opacity = ZONE_BAND_OPACITY } = {}) {
+  const half = width / 2;
+  const positions = [];
+  const indices = [];
+
+  for (let i = 0; i < points.length; i++) {
+    // Direction through this vertex, averaged across the joint so corners meet
+    // without a gap.
+    const prev = points[i - 1] ?? points[i];
+    const next = points[i + 1] ?? points[i];
+    let dx = next[0] - prev[0];
+    let dz = next[1] - prev[1];
+    const length = Math.hypot(dx, dz) || 1;
+    dx /= length;
+    dz /= length;
+    const nx = -dz * half;
+    const nz = dx * half;
+    positions.push(points[i][0] + nx, y, points[i][1] + nz);
+    positions.push(points[i][0] - nx, y, points[i][1] - nz);
+  }
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = i * 2;
+    indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  const material = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  return new THREE.Mesh(geometry, material);
 }
 
 function buildMarkings() {
@@ -126,9 +192,9 @@ function buildMarkings() {
     ]),
   );
 
-  // Key / paint (open at the baseline) — drawn in the Paint zone colour.
+  // Key / paint (open at the baseline), in the Paint zone colour.
   group.add(
-    lineFromPoints([
+    bandFromPoints([
       [-8, 0],
       [-8, 19],
       [8, 19],
@@ -136,31 +202,29 @@ function buildMarkings() {
     ], ZONE_COLORS.paint),
   );
 
-  // Free-throw circle sits in the mid-range area.
-  group.add(lineFromPoints(arcPoints(0, 19, 6, 0, Math.PI * 2), ZONE_COLORS.mid));
+  // Free-throw circle sits in the mid-range area. It crosses the top of the key
+  // at x = +/-6, so it is nudged a hair higher than the Paint band to keep
+  // those two intersections from z-fighting.
+  group.add(bandFromPoints(arcPoints(0, 19, 6, 0, Math.PI * 2, 72), ZONE_COLORS.mid, { y: ZONE_BAND_Y + 0.001 }));
 
-  // Restricted area arc (opens toward the baseline).
+  // Restricted area arc (opens toward the baseline). Left as a hairline: it
+  // divides the Paint from itself, so a heavy band would only add noise.
   group.add(lineFromPoints(arcPoints(0, RIM_Z, 4, 0, Math.PI)));
 
-  // Three-point line: corner straights + arc.
+  // Three-point line: corner straight, arc, corner straight — one continuous
+  // run so the band has no seam at the corners.
   const R = 23.75;
   const cornerX = 22;
   const cornerZ = RIM_Z + Math.sqrt(R * R - cornerX * cornerX);
   const startAngle = Math.atan2(cornerZ - RIM_Z, cornerX);
   const endAngle = Math.PI - startAngle;
   group.add(
-    lineFromPoints([
+    bandFromPoints([
       [cornerX, 0],
-      [cornerX, cornerZ],
-    ], ZONE_COLORS.three),
-  );
-  group.add(
-    lineFromPoints([
+      ...arcPoints(0, RIM_Z, R, startAngle, endAngle, 96),
       [-cornerX, 0],
-      [-cornerX, cornerZ],
     ], ZONE_COLORS.three),
   );
-  group.add(lineFromPoints(arcPoints(0, RIM_Z, R, startAngle, endAngle), ZONE_COLORS.three));
 
   return group;
 }

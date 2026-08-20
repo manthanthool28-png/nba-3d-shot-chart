@@ -12,7 +12,11 @@ export function buildWoodTexture(widthFt, lengthFt) {
   canvas.height = h;
   const ctx = canvas.getContext('2d');
 
-  const base = { r: 24, g: 20, b: 15 };
+  // Near-neutral graphite rather than a warm brown. Under the arena spotlights
+  // a warm base lights up to a strong tan, which swallowed the orange 3PT tint
+  // completely — a neutral floor lets all three zone colours read as their own
+  // hue instead of blending into the wood.
+  const base = { r: 21, g: 21, b: 25 };
   ctx.fillStyle = `rgb(${base.r},${base.g},${base.b})`;
   ctx.fillRect(0, 0, w, h);
 

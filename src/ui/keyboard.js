@@ -3,7 +3,7 @@ import * as THREE from 'three';
 const ROTATE_STEP = 0.06;
 const ZOOM_FACTOR = 0.92;
 
-export function initKeyboardNav({ camera, controls, onReset, onEscape, onToggleHelp }) {
+export function initKeyboardNav({ camera, controls, onReset, onEscape, onToggleHelp, onToggleFullscreen }) {
   function rotate(deltaTheta, deltaPhi) {
     const offset = camera.position.clone().sub(controls.target);
     const spherical = new THREE.Spherical().setFromVector3(offset);
@@ -46,6 +46,8 @@ export function initKeyboardNav({ camera, controls, onReset, onEscape, onToggleH
       case '-': zoom(1 / ZOOM_FACTOR); event.preventDefault(); break;
       case 'r':
       case 'R': onReset(); break;
+      case 'f':
+      case 'F': onToggleFullscreen?.(); break;
       default: break;
     }
   }

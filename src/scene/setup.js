@@ -23,6 +23,13 @@ export function createScene(container) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
+  // Three overlapping 220-intensity spots drive the middle of the court well
+  // past 1.0. With no tone mapping that clips to flat white, which is what
+  // washed the zone tints out to pastel and made the orange 3PT area read as
+  // bare floor. ACES rolls the highlights off instead, so the lit pool keeps
+  // its colour; the exposure bump keeps overall brightness where it was.
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
   container.appendChild(renderer.domElement);
 
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -77,13 +84,19 @@ export function createScene(container) {
 
   // Overhead arena-style spot lights over the key and the arc, for a bit of
   // "under the lights" feel beyond the flat hemisphere/directional pair.
+  //
+  // Three of these overlap over the middle of the court, so the intensity is
+  // deliberately well short of what one spot alone would want: any higher and
+  // the combined pool saturates the floor, which flattens the zone tints and
+  // the shot spikes into the same pale wash.
+  const SPOT_INTENSITY = 220;
   const spotPositions = [
     [-14, 38, 10],
     [14, 38, 10],
     [0, 42, 26],
   ];
   const spotLights = spotPositions.map(([x, y, z]) => {
-    const spot = new THREE.SpotLight(0xdfe8ff, 220, 90, Math.PI / 7, 0.5, 1.4);
+    const spot = new THREE.SpotLight(0xdfe8ff, SPOT_INTENSITY, 90, Math.PI / 7, 0.5, 1.4);
     spot.position.set(x, y, z);
     spot.target.position.set(x * 0.3, 0, z);
     scene.add(spot, spot.target);
@@ -111,7 +124,7 @@ export function createScene(container) {
     }
 
     secondRig = spotPositions.map(([x, y, z]) => {
-      const spot = new THREE.SpotLight(0xdfe8ff, 220, 90, Math.PI / 7, 0.5, 1.4);
+      const spot = new THREE.SpotLight(0xdfe8ff, SPOT_INTENSITY, 90, Math.PI / 7, 0.5, 1.4);
       spot.position.set(x + offsetX, y, z);
       spot.target.position.set(x * 0.3 + offsetX, 0, z);
       scene.add(spot, spot.target);

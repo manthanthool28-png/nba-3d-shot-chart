@@ -32,6 +32,7 @@ import { createShotLabels } from './ui/labels.js';
 import { createSplitView2D } from './ui/splitView2d.js';
 import { createPlayerCard } from './ui/playerCard.js';
 import { initKeyboardNav } from './ui/keyboard.js';
+import { initFullscreen, toggleFullscreen } from './ui/fullscreen.js';
 import { initMenuDock, makeDraggable, resetPanelPositions, clampAllPanels } from './ui/menuDock.js';
 import { makeCollapsible } from './ui/collapsible.js';
 import { updateUrl, copyText, screenshotPng, loadBookmarks, saveBookmark, removeBookmark } from './ui/share.js';
@@ -510,6 +511,8 @@ async function main() {
     setSettingsOpen(els.settingsPanel.classList.contains('hidden'));
   });
 
+  initFullscreen(document.querySelector('#fullscreen-toggle'));
+
   document.querySelector('#color-mode').value = state.colorMode;
   document.querySelector('#color-mode').addEventListener('change', (e) => { state.colorMode = e.target.value; refresh(); });
 
@@ -604,6 +607,7 @@ async function main() {
     onReset: () => cameraDirector.goTo(getPreset('broadcast')),
     onEscape: () => { interaction.clearSelection(); setSettingsOpen(false); helpModal.hide(); guide.hide(); toggleStatsView(false); },
     onToggleHelp: () => helpModal.toggle(),
+    onToggleFullscreen: toggleFullscreen,
   });
 
   // ---- Initial load ----
