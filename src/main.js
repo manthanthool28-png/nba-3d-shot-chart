@@ -36,7 +36,6 @@ import { initMenuDock, makeDraggable, resetPanelPositions, clampAllPanels } from
 import { makeCollapsible } from './ui/collapsible.js';
 import { updateUrl, copyText, screenshotPng, loadBookmarks, saveBookmark, removeBookmark } from './ui/share.js';
 import { createCrowdAudio } from './audio.js';
-import { createShotSounds } from './shotSounds.js';
 import { actionBucketOf } from './data/actionTypes.js';
 
 const els = {
@@ -92,7 +91,6 @@ async function main() {
   // "left/right" flips as soon as you orbit past the baseline).
   const courtLabels = createShotLabels(els.appRoot, 'court-name-label');
   const audio = createCrowdAudio();
-  const shotSounds = createShotSounds();
   const interaction = createShotInteraction({ scene, camera, renderer, tooltipEl: els.tooltip });
   const split2d = createSplitView2D(els.splitApp);
   const playerCard = createPlayerCard(els.appRoot);
@@ -364,11 +362,9 @@ async function main() {
     arcGroup.clear();
     if (shots.length === 1) {
       arcGroup.add(buildShotArc(shots[0]));
-      // Swish / clank for the outcome, and put the figure into the shooting
-      // motion for that shot type (dunk, hook, fadeaway...).
-      const bucket = actionBucketOf(shots[0]);
-      shotSounds.play(shots[0].made, bucket);
-      playerCard.showPose(bucket);
+      // Put the figure into the shooting motion for that shot type
+      // (dunk, hook, fadeaway...).
+      playerCard.showPose(actionBucketOf(shots[0]));
     } else {
       playerCard.showPose('idle'); // nothing selected — relax the figure
     }
@@ -494,10 +490,6 @@ async function main() {
     state.audioOn = e.target.checked;
     audio.setEnabled(state.audioOn);
   });
-
-  const shotSoundToggle = document.querySelector('#shot-sound-toggle');
-  shotSoundToggle.checked = true;
-  shotSoundToggle.addEventListener('change', (e) => shotSounds.setEnabled(e.target.checked));
 
   const playerToggle = document.querySelector('#player-toggle');
   playerToggle.checked = true;

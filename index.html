@@ -10,6 +10,7 @@
     <div id="app-root">
       <div id="app-title">
         <h1>COURT VISION 3D <span class="version-badge">V2</span></h1>
+        <p class="tagline">Seeing basketball in new dimensions</p>
       </div>
       <div id="app"></div>
       <div id="split-app" class="hidden"></div>
@@ -42,7 +43,6 @@
         <label class="row checkbox"><input type="checkbox" id="contrast-toggle" /><span>High contrast</span></label>
         <label class="row checkbox"><input type="checkbox" id="motion-toggle" /><span>Reduce motion</span></label>
         <label class="row checkbox"><input type="checkbox" id="audio-toggle" /><span>Crowd audio (muted by default)</span></label>
-        <label class="row checkbox"><input type="checkbox" id="shot-sound-toggle" checked /><span>Shot sounds when you click a shot</span></label>
         <label class="row checkbox"><input type="checkbox" id="player-toggle" checked /><span>Player figure</span></label>
         <label class="row checkbox"><input type="checkbox" id="labels-toggle" /><span>"What am I looking at?" labels</span></label>
         <label class="row checkbox"><input type="checkbox" id="table-toggle" /><span>Table view (accessible data view)</span></label>
@@ -58,10 +58,14 @@
         </div>
         <div id="bookmark-list"></div>
 
+        <h3>Guide</h3>
+        <div class="btn-row">
+          <button id="tour-btn" class="pill active">Step-by-step guide</button>
+        </div>
+
         <h3>Help</h3>
         <div class="btn-row">
           <button id="help-btn">Keyboard shortcuts</button>
-          <button id="tour-btn">Step-by-step guide</button>
           <button id="demo-reset-btn">Reset to demo</button>
         </div>
       </div>

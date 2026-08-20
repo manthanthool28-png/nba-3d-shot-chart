@@ -45,7 +45,7 @@ const STEPS = [
   },
   {
     title: 'Move around the court',
-    body: 'Drag to spin the court, scroll to zoom. Click any shot to hear it and see its details — the player figure copies that shot type.',
+    body: 'Drag to spin the court, scroll to zoom. Click any shot to see its details — the player figure copies that shot type.',
     svg: courtSketch(`
       <path d="M46 96 a 56 30 0 0 0 108 0" fill="none" stroke="${INK}" stroke-width="2" stroke-dasharray="5 4"/>
       <path d="M150 92 l6 6 l-8 4 z" fill="${INK}"/>
