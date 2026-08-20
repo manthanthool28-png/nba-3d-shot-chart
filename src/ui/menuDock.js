@@ -51,6 +51,8 @@ function snapPosition(element, x, y, w, h) {
 // whether a pointerdown starts a drag (lets buttons/selects keep working).
 // Window-level move/up listeners make this robust even when pointer capture
 // is unavailable or the pointer leaves the handle mid-drag.
+const clampers = [];
+
 export function makeDraggable(element, { storageKey, isHandle, handleEl = element }) {
   draggables.push(element);
   function clamp(x, y) {
@@ -116,6 +118,30 @@ export function makeDraggable(element, { storageKey, isHandle, handleEl = elemen
     const { x, y } = clamp(rect.left, rect.top);
     applyPos(x, y);
   });
+
+  // A panel that grows (e.g. "More views" expanding) can push its own right or
+  // bottom edge off-screen once it has an explicit position. Pull it back in.
+  function reclamp() {
+    if (!element.style.left) return; // still edge-anchored; CSS handles it
+    const rect = element.getBoundingClientRect();
+    const { x, y } = clamp(rect.left, rect.top);
+    if (Math.abs(x - rect.left) > 0.5 || Math.abs(y - rect.top) > 0.5) applyPos(x, y);
+  }
+  clampers.push(reclamp);
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(reclamp).observe(element);
+}
+
+// Pull every positioned panel back inside the viewport. Call after a re-render
+// changes a panel's size, so nothing is left hanging off an edge.
+export function clampAllPanels() {
+  clampers.forEach((fn) => fn());
+}
+
+// Forget every saved panel position so the layout returns to its defaults.
+export function resetPanelPositions() {
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith('shotchart.') && key.endsWith('.pos')) localStorage.removeItem(key);
+  }
 }
 
 export function initMenuDock() {

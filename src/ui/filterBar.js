@@ -1,6 +1,7 @@
 import { ZONE_GROUPS } from '../data/zones.js';
 import { ACTION_TYPE_LABELS } from '../data/actionTypes.js';
 import { ZONE_COLORS } from '../data/zoneColors.js';
+import { clampAllPanels } from './menuDock.js';
 
 // Collapsed by default; survives re-renders so the bar doesn't snap shut on
 // every filter change.
@@ -97,7 +98,8 @@ export function renderFilterBar(container, { subjectOptions, seasonOptions, data
   moreBtn.setAttribute('aria-expanded', String(moreOpen));
   moreBtn.addEventListener('click', () => {
     moreOpen = !moreOpen;
-    renderFilterBar(container, { seasonOptions, datasetKey, filters, games, dateBounds, timelineOpen, onFilterChange, onDatasetChange, onToggleTimeline });
+    renderFilterBar(container, { subjectOptions, seasonOptions, datasetKey, filters, games, dateBounds, timelineOpen, onFilterChange, onDatasetChange, onToggleTimeline });
+    requestAnimationFrame(clampAllPanels);
   });
   mainRow.appendChild(moreBtn);
   container.appendChild(mainRow);

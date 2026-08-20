@@ -265,9 +265,11 @@ html, body {
 }
 
 /* While settings is open it owns the right edge — the camera panel drops its
-   expanded rows so the two never sit on top of each other. */
+   expanded rows and the (decorative) player card steps aside, so nothing sits
+   underneath the settings panel. */
 body.settings-open #camera-bar .camera-row:nth-of-type(n + 3),
 body.settings-open #camera-bar .camera-header .more-toggle { display: none; }
+body.settings-open #player-card { display: none; }
 #settings-panel h3 {
   font-size: 15px;
   text-transform: uppercase;

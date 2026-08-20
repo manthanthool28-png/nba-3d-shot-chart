@@ -31,7 +31,7 @@ import { createShotLabels } from './ui/labels.js';
 import { createSplitView2D } from './ui/splitView2d.js';
 import { createPlayerCard } from './ui/playerCard.js';
 import { initKeyboardNav } from './ui/keyboard.js';
-import { initMenuDock, makeDraggable } from './ui/menuDock.js';
+import { initMenuDock, makeDraggable, resetPanelPositions, clampAllPanels } from './ui/menuDock.js';
 import { makeCollapsible } from './ui/collapsible.js';
 import { updateUrl, copyText, screenshotPng, loadBookmarks, saveBookmark, removeBookmark } from './ui/share.js';
 import { createCrowdAudio } from './audio.js';
@@ -327,6 +327,9 @@ async function main() {
     });
 
     renderTimelineUI();
+    // Panels change size when their contents re-render (e.g. "More views"
+    // expanding); keep any that were dragged inside the viewport.
+    requestAnimationFrame(clampAllPanels);
   }
 
   function renderTimelineUI() {
@@ -408,6 +411,7 @@ async function main() {
     const next = force ?? !statsViewOpen;
     statsViewOpen = next;
     document.body.classList.toggle('stats-open', next);
+    if (next) setSettingsOpen(false); // don't leave settings floating over the charts
     let wrap = document.querySelector('#stats-view-wrap');
     if (next) {
       if (!wrap) {
@@ -445,11 +449,14 @@ async function main() {
   }
 
   // ---- Settings panel wiring ----
+  function setSettingsOpen(open) {
+    els.settingsPanel.classList.toggle('hidden', !open);
+    // Settings owns the right edge while it is open; the camera panel and
+    // player card step aside via body.settings-open.
+    document.body.classList.toggle('settings-open', open);
+  }
   els.settingsToggle.addEventListener('click', () => {
-    els.settingsPanel.classList.toggle('hidden');
-    // Settings occupies the right edge; let the camera panel collapse so the
-    // two don't sit on top of each other.
-    document.body.classList.toggle('settings-open', !els.settingsPanel.classList.contains('hidden'));
+    setSettingsOpen(els.settingsPanel.classList.contains('hidden'));
   });
 
   document.querySelector('#color-mode').value = state.colorMode;
@@ -520,7 +527,13 @@ async function main() {
   renderBookmarks(loadBookmarks());
 
   document.querySelector('#help-btn').addEventListener('click', () => helpModal.toggle());
-  document.querySelector('#demo-reset-btn').addEventListener('click', () => { location.href = location.pathname; });
+  document.querySelector('#demo-reset-btn').addEventListener('click', () => {
+    // Back to a clean demo: default panel alignment and the welcome guidance.
+    resetPanelPositions();
+    localStorage.removeItem('shotchart.onboarding.seen');
+    localStorage.removeItem('shotchart.menu.autohide');
+    location.href = location.pathname;
+  });
   document.querySelector('#tour-btn').addEventListener('click', () => {
     els.settingsPanel.classList.add('hidden');
     cameraDirector.runTour(PRESET_LIST.filter((p) => p !== 'shooterPOV' && p !== 'defenderPOV'), {
