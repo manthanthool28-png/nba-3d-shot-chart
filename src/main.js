@@ -54,6 +54,9 @@ const els = {
   settingsPanel: document.querySelector('#settings-panel'),
 };
 
+// How far the compare court sits from the primary one, in feet.
+const SPLIT_COURT_OFFSET = 62;
+
 function disposeGroup(group) {
   group.traverse((obj) => {
     if (obj.geometry) obj.geometry.dispose();
@@ -66,7 +69,7 @@ function disposeGroup(group) {
 }
 
 async function main() {
-  const { scene, camera, renderer, controls, setHighContrast, setDragMode, setWideView } = createScene(els.app);
+  const { scene, camera, renderer, controls, setHighContrast, setDragMode, setWideView, setSecondCourtLights } = createScene(els.app);
   const cameraDirector = createCameraDirector(camera, controls, { reduceMotion: () => state.reduceMotion });
   const court = buildCourt();
   scene.add(court.group);
@@ -107,7 +110,7 @@ async function main() {
   let currentField = null;
   let timeline = { open: false, index: 0, playing: false, speed: 1, source: [] };
   let playAccum = 0;
-  let hotZoneGlowUpdate = null;
+  let glowUpdates = [];
   let tray = [];
   let split2DOpen = false;
 
@@ -189,13 +192,17 @@ async function main() {
 
     dynamicGroup.add(buildHeatmapPlane(shotsToRender));
 
+    glowUpdates = [];
     const hotGlow = buildHotZoneGlow(field.efg);
     dynamicGroup.add(hotGlow.group);
-    hotZoneGlowUpdate = hotGlow.update;
+    glowUpdates.push(hotGlow.update);
 
     // Split mode pulls the camera far back to frame two courts — push the fog
     // out so the scene doesn't fade into the background at that distance.
-    setWideView(state.compareMode === 'split' && !!compareDataset);
+    const splitActive = state.compareMode === 'split' && !!compareDataset;
+    setWideView(splitActive);
+    // Light the compare court the same way as the first one.
+    setSecondCourtLights(splitActive ? SPLIT_COURT_OFFSET : null);
     courtLabels.clear(); // re-populated below when split mode builds both courts
 
     let compareLabel = null;
@@ -207,12 +214,23 @@ async function main() {
         dynamicGroup.add(compareField.mesh);
         compareLabel = `Overlay: ${dataset.name} (outcome colors) vs ${compareDataset.name} (orange/blue)`;
       } else if (state.compareMode === 'split') {
-        const OFFSET = 62;
+        const OFFSET = SPLIT_COURT_OFFSET;
         const secondCourt = buildCourt();
         secondCourt.group.position.x = OFFSET;
         dynamicGroup.add(secondCourt.group);
         const compareField = buildShotField(filteredCompare, { colorMode: state.colorMode, palette: state.palette === 'colorblind' ? 'colorblind' : 'default', teamColor: compareDataset.teamColor }, new Set(), { offsetX: OFFSET });
         dynamicGroup.add(compareField.mesh);
+        // Same floor layers as the primary court, shifted across, so the
+        // compared player's court isn't visibly darker.
+        const compareHeat = buildHeatmapPlane(filteredCompare);
+        compareHeat.position.x += OFFSET;
+        dynamicGroup.add(compareHeat);
+
+        const compareGlow = buildHotZoneGlow(compareField.efg);
+        compareGlow.group.position.x = OFFSET;
+        dynamicGroup.add(compareGlow.group);
+        glowUpdates.push(compareGlow.update);
+
         // Register the second court so hover/click works on it too.
         interaction.setCompareField({
           mesh: compareField.mesh,
@@ -606,7 +624,7 @@ async function main() {
     particles.update(dt);
     playerCard.update(dt, state.reduceMotion);
     court.updateNetSway(t, state.reduceMotion);
-    hotZoneGlowUpdate?.(t);
+    for (const update of glowUpdates) update(t);
     if (els.labelsSamples) shotLabels.update(camera, renderer);
     courtLabels.update(camera, renderer);
 

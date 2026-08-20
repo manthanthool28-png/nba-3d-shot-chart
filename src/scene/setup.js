@@ -90,6 +90,40 @@ export function createScene(container) {
     return spot;
   });
 
+  // Split-compare puts a second court at +offsetX. The spotlight rig above
+  // only covers the first court, so without a matching rig the compared
+  // player's court renders noticeably darker — which would make the two look
+  // different for reasons that have nothing to do with the data.
+  let secondRig = [];
+  function setSecondCourtLights(offsetX) {
+    // Always clear the previous rig first.
+    for (const spot of secondRig) {
+      scene.remove(spot, spot.target);
+      spot.dispose?.();
+    }
+    secondRig = [];
+
+    if (offsetX == null) {
+      keyLight.shadow.camera.left = -35;
+      keyLight.shadow.camera.right = 35;
+      keyLight.shadow.camera.updateProjectionMatrix();
+      return;
+    }
+
+    secondRig = spotPositions.map(([x, y, z]) => {
+      const spot = new THREE.SpotLight(0xdfe8ff, 220, 90, Math.PI / 7, 0.5, 1.4);
+      spot.position.set(x + offsetX, y, z);
+      spot.target.position.set(x * 0.3 + offsetX, 0, z);
+      scene.add(spot, spot.target);
+      return spot;
+    });
+
+    // Widen the shadow frustum so both courts still cast shadows.
+    keyLight.shadow.camera.left = -35;
+    keyLight.shadow.camera.right = offsetX + 35;
+    keyLight.shadow.camera.updateProjectionMatrix();
+  }
+
   function setHighContrast(enabled) {
     scene.fog = enabled ? null : new THREE.Fog(0x0a0a0f, FOG_NEAR, FOG_FAR);
     hemiLight.intensity = enabled ? 0.85 : 0.6;
@@ -102,5 +136,5 @@ export function createScene(container) {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  return { scene, camera, renderer, controls, spotLights, setHighContrast, setDragMode, setWideView };
+  return { scene, camera, renderer, controls, spotLights, setHighContrast, setDragMode, setWideView, setSecondCourtLights };
 }
