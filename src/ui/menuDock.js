@@ -52,9 +52,11 @@ function snapPosition(element, x, y, w, h) {
 // Window-level move/up listeners make this robust even when pointer capture
 // is unavailable or the pointer leaves the handle mid-drag.
 const clampers = [];
+const positionKeys = new WeakMap();
 
 export function makeDraggable(element, { storageKey, isHandle, handleEl = element }) {
   draggables.push(element);
+  positionKeys.set(element, storageKey);
   function clamp(x, y) {
     const rect = element.getBoundingClientRect();
     return {
@@ -68,6 +70,10 @@ export function makeDraggable(element, { storageKey, isHandle, handleEl = elemen
     element.style.top = `${y}px`;
     element.style.right = 'auto';
     element.style.bottom = 'auto';
+    // The player card is centred with translateY(-50%); once we position it
+    // explicitly that transform would offset it again (and compound on every
+    // reload), so drop it.
+    element.style.transform = 'none';
   }
 
   const saved = (() => {
@@ -135,6 +141,22 @@ export function makeDraggable(element, { storageKey, isHandle, handleEl = elemen
 // changes a panel's size, so nothing is left hanging off an edge.
 export function clampAllPanels() {
   clampers.forEach((fn) => fn());
+}
+
+// Return one panel to the resting place its stylesheet defines.
+export function resetPanelPosition(element) {
+  if (!element) return;
+  element.style.left = '';
+  element.style.top = '';
+  element.style.right = '';
+  element.style.bottom = '';
+  element.style.transform = '';
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith('shotchart.') && key.endsWith('.pos')) {
+      // Only clear the entry belonging to this element.
+      if (positionKeys.get(element) === key) localStorage.removeItem(key);
+    }
+  }
 }
 
 // Forget every saved panel position so the layout returns to its defaults.

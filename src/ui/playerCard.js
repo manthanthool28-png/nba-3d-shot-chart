@@ -63,7 +63,56 @@ function joint(position, radius, material) {
   return mesh;
 }
 
-function buildFigure(teamColorHex, jerseyNumber) {
+
+// Arm/ball positions per shot type, so clicking a spike shows the figure in
+// roughly that shooting motion. Shoulders stay put; elbows, wrists, the ball
+// and an optional lean carry the pose.
+const POSES = {
+  idle: {
+    rElbow: [0.82, 2.95, 0.28], rWrist: [0.68, 3.10, 0.72],
+    lElbow: [-0.74, 2.92, 0.06], lWrist: [-0.66, 2.28, 0.14],
+    ball: [0.68, 3.52, 0.82], lean: 0, label: null,
+  },
+  // Two hands high above the rim, body stretched up.
+  dunk: {
+    rElbow: [0.86, 4.30, 0.10], rWrist: [0.74, 5.05, 0.22],
+    lElbow: [-0.86, 4.30, 0.10], lWrist: [-0.74, 5.05, 0.22],
+    ball: [0.10, 5.45, 0.26], lean: -0.06, label: 'Dunk',
+  },
+  // One hand extended up and forward, off one foot.
+  layup: {
+    rElbow: [0.80, 4.05, 0.34], rWrist: [0.66, 4.72, 0.60],
+    lElbow: [-0.82, 3.10, 0.20], lWrist: [-0.70, 2.45, 0.34],
+    ball: [0.60, 5.05, 0.70], lean: -0.05, label: 'Layup',
+  },
+  // Sweeping arm out to the side, ball released over the head.
+  hook: {
+    rElbow: [1.15, 3.75, 0.05], rWrist: [1.05, 4.55, 0.12],
+    lElbow: [-0.86, 3.05, 0.18], lWrist: [-0.92, 2.40, 0.22],
+    ball: [0.78, 4.95, 0.16], lean: -0.04, label: 'Hook shot',
+  },
+  // Soft high release from close range.
+  floater: {
+    rElbow: [0.72, 4.00, 0.30], rWrist: [0.52, 4.70, 0.46],
+    lElbow: [-0.78, 3.20, 0.22], lWrist: [-0.60, 3.70, 0.34],
+    ball: [0.42, 5.08, 0.52], lean: -0.03, label: 'Floater',
+  },
+  // Shooting form with the body leaning away from the basket.
+  fadeaway: {
+    rElbow: [0.70, 3.95, 0.18], rWrist: [0.52, 4.60, 0.40],
+    lElbow: [-0.74, 3.65, 0.26], lWrist: [-0.52, 4.25, 0.40],
+    ball: [0.30, 4.95, 0.46], lean: 0.16, label: 'Fadeaway',
+  },
+  // Classic set-shot release point.
+  jumper: {
+    rElbow: [0.72, 3.90, 0.22], rWrist: [0.50, 4.55, 0.42],
+    lElbow: [-0.72, 3.70, 0.28], lWrist: [-0.48, 4.28, 0.44],
+    ball: [0.26, 4.92, 0.50], lean: -0.02, label: 'Jump shot',
+  },
+};
+
+function buildFigure(teamColorHex, jerseyNumber, poseKey = 'idle') {
+  const pose = POSES[poseKey] ?? POSES.idle;
   const group = new THREE.Group();
 
   const teamColor = new THREE.Color(teamColorHex || '#888888');
@@ -160,8 +209,8 @@ function buildFigure(teamColorHex, jerseyNumber) {
 
   // ---- Arms. Right arm bent, palming the ball in front; left relaxed. ----
   const rShoulder = [0.58, 3.62, 0];
-  const rElbow = [0.82, 2.95, 0.28];
-  const rWrist = [0.68, 3.1, 0.72];
+  const rElbow = pose.rElbow;
+  const rWrist = pose.rWrist;
   group.add(joint(rShoulder, 0.17, skinMat));
   group.add(limb(rShoulder, rElbow, 0.13, skinMat));
   group.add(joint(rElbow, 0.115, skinMat));
@@ -169,8 +218,8 @@ function buildFigure(teamColorHex, jerseyNumber) {
   group.add(joint(rWrist, 0.12, skinMat));
 
   const lShoulder = [-0.58, 3.62, 0];
-  const lElbow = [-0.74, 2.92, 0.06];
-  const lWrist = [-0.66, 2.28, 0.14];
+  const lElbow = pose.lElbow;
+  const lWrist = pose.lWrist;
   group.add(joint(lShoulder, 0.17, skinMat));
   group.add(limb(lShoulder, lElbow, 0.13, skinMat));
   group.add(joint(lElbow, 0.115, skinMat));
@@ -179,7 +228,7 @@ function buildFigure(teamColorHex, jerseyNumber) {
 
   // ---- Ball resting on the right palm, with seam rings. Tagged so a real
   // ball model (models/ball.glb) can replace it after it loads. ----
-  const ballCenter = new THREE.Vector3(0.68, 3.52, 0.82);
+  const ballCenter = new THREE.Vector3(...pose.ball);
   const ball = new THREE.Mesh(new THREE.SphereGeometry(0.38, 20, 16), ballMat);
   ball.name = 'ball-proc';
   ball.position.copy(ballCenter);
@@ -193,6 +242,9 @@ function buildFigure(teamColorHex, jerseyNumber) {
     group.add(seam);
   }
   group.userData.ballCenter = ballCenter;
+
+  // Lean the body (kept off the shadow, which stays flat on the floor).
+  if (pose.lean) group.rotation.x = pose.lean;
 
   // Soft ground shadow.
   const shadow = new THREE.Mesh(
@@ -339,12 +391,17 @@ export function createPlayerCard(parent) {
     return gltf;
   }
 
+  let current = { name: null, teamColor: null };
+  let poseKey = 'idle';
+
   function setPlayer({ name, teamColor }) {
+    current = { name, teamColor };
+    poseKey = 'idle';
     nameEl.textContent = name;
     const token = ++loadToken;
 
     // Show the procedural figure immediately; swap in a GLB if one exists.
-    showFigure(buildFigure(teamColor, JERSEY_NUMBERS[name]));
+    showFigure(buildFigure(teamColor, JERSEY_NUMBERS[name], poseKey));
     swapInBallModel(figure);
 
     (async () => {
@@ -382,5 +439,18 @@ export function createPlayerCard(parent) {
     container.classList.toggle('hidden', !visible);
   }
 
-  return { setPlayer, update, setVisible };
+  // Strike the shooting motion for the selected shot. The pose is held while
+  // that shot stays selected; pass 'idle' (or clear the selection) to relax.
+  function showPose(bucket) {
+    if (!current.name || !POSES[bucket] || bucket === poseKey) return;
+    poseKey = bucket;
+    const rot = figure ? figure.rotation.y : 0;
+    showFigure(buildFigure(current.teamColor, JERSEY_NUMBERS[current.name], poseKey));
+    if (figure) figure.rotation.y = rot; // keep the idle spin continuous
+    swapInBallModel(figure);
+    const label = POSES[bucket].label;
+    nameEl.textContent = label ? `${current.name} · ${label}` : current.name;
+  }
+
+  return { setPlayer, update, setVisible, showPose };
 }

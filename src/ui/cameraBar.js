@@ -1,4 +1,4 @@
-import { clampAllPanels } from './menuDock.js';
+import { clampAllPanels, resetPanelPosition } from './menuDock.js';
 
 const PRIMARY_PRESETS = {
   broadcast: 'Broadcast',
@@ -46,9 +46,10 @@ export function renderCameraBar(container, { axisLock, autoOrbit, dragMode, onPr
   moreBtn.addEventListener('click', () => {
     moreOpen = !moreOpen;
     renderCameraBar(container, { axisLock, autoOrbit, dragMode, onPreset, onReset, onTour, onAxisLock, onAutoOrbit, onDragMode });
-    // Expanding makes this panel bigger; if it was dragged somewhere, pull it
-    // back inside the viewport instead of letting it hang off an edge.
-    requestAnimationFrame(clampAllPanels);
+    // Expanding makes this panel bigger, so pull it back inside the viewport.
+    // Collapsing returns it to its resting corner (bottom-right).
+    if (moreOpen) requestAnimationFrame(clampAllPanels);
+    else resetPanelPosition(container);
   });
   header.appendChild(moreBtn);
   container.appendChild(header);

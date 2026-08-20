@@ -35,6 +35,8 @@ import { initMenuDock, makeDraggable, resetPanelPositions, clampAllPanels } from
 import { makeCollapsible } from './ui/collapsible.js';
 import { updateUrl, copyText, screenshotPng, loadBookmarks, saveBookmark, removeBookmark } from './ui/share.js';
 import { createCrowdAudio } from './audio.js';
+import { createShotSounds } from './shotSounds.js';
+import { actionBucketOf } from './data/actionTypes.js';
 
 const els = {
   app: document.querySelector('#app'),
@@ -89,6 +91,7 @@ async function main() {
   // "left/right" flips as soon as you orbit past the baseline).
   const courtLabels = createShotLabels(els.appRoot, 'court-name-label');
   const audio = createCrowdAudio();
+  const shotSounds = createShotSounds();
   const interaction = createShotInteraction({ scene, camera, renderer, tooltipEl: els.tooltip });
   const split2d = createSplitView2D(els.splitApp);
   const playerCard = createPlayerCard(els.appRoot);
@@ -355,7 +358,16 @@ async function main() {
     lastSelected = shots;
     renderSidebarUI();
     arcGroup.clear();
-    if (shots.length === 1) arcGroup.add(buildShotArc(shots[0]));
+    if (shots.length === 1) {
+      arcGroup.add(buildShotArc(shots[0]));
+      // Swish / clank for the outcome, and put the figure into the shooting
+      // motion for that shot type (dunk, hook, fadeaway...).
+      const bucket = actionBucketOf(shots[0]);
+      shotSounds.play(shots[0].made, bucket);
+      playerCard.showPose(bucket);
+    } else {
+      playerCard.showPose('idle'); // nothing selected — relax the figure
+    }
   });
   interaction.on('hover', (shot) => {
     if (split2DOpen) split2d.highlightShot(shot);
@@ -474,7 +486,14 @@ async function main() {
   motionToggle.checked = state.reduceMotion;
   motionToggle.addEventListener('change', (e) => { state.reduceMotion = e.target.checked; cameraDirector.setAutoOrbit(state.autoOrbit && !state.reduceMotion); });
 
-  document.querySelector('#audio-toggle').addEventListener('change', (e) => { state.audioOn = e.target.checked; audio.setEnabled(state.audioOn); });
+  document.querySelector('#audio-toggle').addEventListener('change', (e) => {
+    state.audioOn = e.target.checked;
+    audio.setEnabled(state.audioOn);
+  });
+
+  const shotSoundToggle = document.querySelector('#shot-sound-toggle');
+  shotSoundToggle.checked = true;
+  shotSoundToggle.addEventListener('change', (e) => shotSounds.setEnabled(e.target.checked));
 
   const playerToggle = document.querySelector('#player-toggle');
   playerToggle.checked = true;

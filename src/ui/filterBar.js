@@ -1,7 +1,7 @@
 import { ZONE_GROUPS } from '../data/zones.js';
 import { ACTION_TYPE_LABELS } from '../data/actionTypes.js';
 import { ZONE_COLORS } from '../data/zoneColors.js';
-import { clampAllPanels } from './menuDock.js';
+import { clampAllPanels, resetPanelPosition } from './menuDock.js';
 
 // Collapsed by default; survives re-renders so the bar doesn't snap shut on
 // every filter change.
@@ -99,7 +99,10 @@ export function renderFilterBar(container, { subjectOptions, seasonOptions, data
   moreBtn.addEventListener('click', () => {
     moreOpen = !moreOpen;
     renderFilterBar(container, { subjectOptions, seasonOptions, datasetKey, filters, games, dateBounds, timelineOpen, onFilterChange, onDatasetChange, onToggleTimeline });
-    requestAnimationFrame(clampAllPanels);
+    // Same rule as the camera panel: expanded stays on-screen, collapsed
+    // returns the dock to its resting corner (bottom-left).
+    if (moreOpen) requestAnimationFrame(clampAllPanels);
+    else resetPanelPosition(document.querySelector('#bottom-left-stack'));
   });
   mainRow.appendChild(moreBtn);
   container.appendChild(mainRow);
