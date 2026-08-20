@@ -35,7 +35,11 @@ export function findHotStreaks(chronologicalShots, minLength = 3) {
   return streakIds;
 }
 
-export function buildCallouts(shots, leagueEfg) {
+// `outcomeFiltered` is true when the view is limited to makes or misses. In
+// that case eFG% is fixed by the filter (100% for makes, 0% for misses), so
+// comparing it to a league average would be meaningless — those callouts are
+// dropped and the volume ones kept. The maths below is unchanged.
+export function buildCallouts(shots, leagueEfg, outcomeFiltered = false) {
   const callouts = [];
   const byGroup = { paint: [], mid: [], three: [] };
   for (const shot of shots) {
@@ -45,12 +49,17 @@ export function buildCallouts(shots, leagueEfg) {
 
   const cornerThrees = shots.filter((s) => s.zone === 'Left Corner 3' || s.zone === 'Right Corner 3');
   if (cornerThrees.length >= 5) {
-    const pct = (cornerThrees.filter((s) => s.made).length / cornerThrees.length) * 100;
-    callouts.push(`${pct.toFixed(0)}% on corner threes (${cornerThrees.length} attempts)`);
+    if (outcomeFiltered) {
+      callouts.push(`${cornerThrees.length} corner threes in this filter`);
+    } else {
+      const pct = (cornerThrees.filter((s) => s.made).length / cornerThrees.length) * 100;
+      callouts.push(`${pct.toFixed(0)}% on corner threes (${cornerThrees.length} attempts)`);
+    }
   }
 
   for (const [key, group] of Object.entries(byGroup)) {
     if (group.length < 10) continue;
+    if (outcomeFiltered) continue; // efficiency vs league is not meaningful here
     const made = group.filter((s) => s.made).length;
     const threePM = group.filter((s) => s.made && s.shotType === '3PT Field Goal').length;
     const efg = (made + 0.5 * threePM) / group.length;

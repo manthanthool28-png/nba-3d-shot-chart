@@ -142,7 +142,15 @@ function renderCourtCard(el, shots, colorOpts) {
 }
 
 // ---- eFG% by zone vs league average ----
-function renderZoneEfg(el, shots, leagueEfg) {
+// When the view is filtered to makes or misses, eFG% is fixed by the filter,
+// so the league-average comparison is dropped and the card says why.
+function renderZoneEfg(el, shots, leagueEfg, outcomeFiltered = false) {
+  if (outcomeFiltered) {
+    const note = document.createElement('div');
+    note.className = 'chart-sub filter-warning';
+    note.textContent = 'Filtered to one outcome — these are 100%/0% by definition, not season efficiency.';
+    el.appendChild(note);
+  }
   const rows = Object.entries(ZONE_GROUPS).map(([key, group]) => {
     const zoneShots = shots.filter((s) => zoneGroupOf(s) === key);
     return { key, label: group.label, att: zoneShots.length, efg: efgPct(zoneShots), league: leagueEfg?.[key] };
@@ -165,13 +173,13 @@ function renderZoneEfg(el, shots, leagueEfg) {
       .attr('rx', 3).attr('fill', ZONE_COLORS[r.key])
       .on('mouseenter', (event) => showTip(event, `<strong>${r.label}</strong>: ${pct(r.efg)} eFG on ${r.att} attempts${r.league != null ? `<br>League avg ${pct(r.league)}` : ''}`))
       .on('mouseleave', hideTip);
-    if (r.league != null) {
+    if (r.league != null && !outcomeFiltered) {
       svg.append('rect')
         .attr('x', x(r.league) - 1).attr('y', y - 3).attr('width', 2).attr('height', 24)
         .attr('fill', INK.primary);
     }
     // Value label sits clear of both the bar end and the league tick.
-    const labelX = Math.max(x(r.efg), r.league != null ? x(r.league) : 0) + 7;
+    const labelX = Math.max(x(r.efg), (r.league != null && !outcomeFiltered) ? x(r.league) : 0) + 7;
     svgLabel(svg, labelX, y + 13, r.att ? pct(r.efg) : 'no attempts', { fill: INK.primary, weight: 600, tabular: true });
   });
 }
@@ -389,7 +397,7 @@ export function renderStatsView(container, { shots, dataset, colorOpts, filters,
   const panels = [
     ['Shot chart', 'Every attempt — where it was taken from', (el) => renderCourtCard(el, shots, colorOpts)],
     ['Shot density', 'Brighter = more attempts from that spot', (el) => renderDensity(el, shots)],
-    ['eFG% by zone', 'White tick = league average', (el) => renderZoneEfg(el, shots, dataset.leagueEfg)],
+    ['eFG% by zone', 'White tick = league average', (el) => renderZoneEfg(el, shots, dataset.leagueEfg, filters?.outcome !== 'all' && filters?.outcome != null)],
     ['Made vs missed by zone', 'Counts, not percentages', (el) => renderMadeMissed(el, shots)],
     ['Where the shots come from', 'Share of attempts by zone', (el) => renderZoneShare(el, shots)],
     ['Volume vs efficiency', 'How often vs how well, per zone', (el) => renderVolumeEfficiency(el, shots)],

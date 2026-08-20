@@ -855,3 +855,11 @@ body.high-contrast .pill.active {
   display: block;
   border-radius: 8px;
 }
+
+/* Shown when a made/missed filter makes the zone percentages tautological */
+.filter-warning {
+  color: #ffd166 !important;
+  border-left: 3px solid #ffd166;
+  padding-left: 8px;
+  margin: 6px 0 4px;
+}

@@ -3,7 +3,7 @@ import { ZONE_GROUPS } from '../data/zones.js';
 import { statChip } from './statGlossary.js';
 import { ZONE_COLORS } from '../data/zoneColors.js';
 
-export function renderOverlay(container, { name, season, seasonType, shownCount, totalCount, fgPct, colorMode, palette, teamColor, zoneEfg, leagueEfg, compareLabel }) {
+export function renderOverlay(container, { name, season, seasonType, shownCount, totalCount, fgPct, colorMode, palette, teamColor, zoneEfg, leagueEfg, compareLabel, outcomeFilter = 'all' }) {
   container.innerHTML = '';
 
   const header = document.createElement('div');
@@ -41,6 +41,16 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
   hint.appendChild(document.createTextNode(' · thicker = more attempts'));
   container.appendChild(hint);
 
+  const outcomeFiltered = outcomeFilter !== 'all';
+  if (outcomeFiltered) {
+    const note = document.createElement('div');
+    note.className = 'hint filter-warning';
+    note.textContent = outcomeFilter === 'made'
+      ? 'Showing made shots only — the zone figures below are 100% by definition, not season efficiency.'
+      : 'Showing missed shots only — the zone figures below are 0% by definition, not season efficiency.';
+    container.appendChild(note);
+  }
+
   if (leagueEfg) {
     for (const [key, group] of Object.entries(ZONE_GROUPS)) {
       const playerVal = zoneEfg[key] ?? 0;
@@ -57,11 +67,13 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
       fill.className = 'percentile-fill';
       fill.style.width = `${Math.min(playerVal / 0.7, 1) * 100}%`;
       fill.style.background = ZONE_COLORS[key]; // same colour as this zone's filter
-      const leagueMark = document.createElement('div');
-      leagueMark.className = 'percentile-league';
-      leagueMark.style.left = `${Math.min(leagueVal / 0.7, 1) * 100}%`;
       track.appendChild(fill);
-      track.appendChild(leagueMark);
+      if (!outcomeFiltered) {
+        const leagueMark = document.createElement('div');
+        leagueMark.className = 'percentile-league';
+        leagueMark.style.left = `${Math.min(leagueVal / 0.7, 1) * 100}%`;
+        track.appendChild(leagueMark);
+      }
       const pct = document.createElement('span');
       pct.textContent = `${(playerVal * 100).toFixed(0)}%`;
       row.appendChild(label);

@@ -272,8 +272,9 @@ async function main() {
       zoneEfg: field.efg,
       leagueEfg: dataset.leagueEfg,
       compareLabel,
+      outcomeFilter: state.filters.outcome,
     });
-    renderCallouts(els.callouts, buildCallouts(filteredPrimary, dataset.leagueEfg));
+    renderCallouts(els.callouts, buildCallouts(filteredPrimary, dataset.leagueEfg, state.filters.outcome !== 'all'));
 
     renderControls();
 
