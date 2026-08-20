@@ -43,15 +43,51 @@ function buildFloor() {
   return floor;
 }
 
-// Zone identity is carried by two things: a broad, quiet fill over the area
-// and a bright band along its boundary. The fill alone is not enough — the
-// floor is dark, so a translucent orange over it lands on brown and reads as
-// bare wood, which is exactly how the 3PT area used to disappear into the
-// court. The bands are full-strength colour and settle it at any angle.
-const ZONE_FILL_OPACITY = 0.42;
-const ZONE_BAND_WIDTH = 0.5;   // feet
-const ZONE_BAND_OPACITY = 0.92;
-const ZONE_BAND_Y = 0.008;     // above the fills, below the heat-map at 0.012
+// Zone identity is carried by two things: a soft fill over the area and a
+// glow along its boundary. Neither is flat — a solid fill turns the court into
+// a printed poster, and a hard-edged band reads as a sticker laid on the wood.
+// The fill fades out with distance from the rim so the colour sits where the
+// shots are, and the band fades out across its own width so it reads as light
+// on the floor rather than paint.
+const ZONE_FILL_OPACITY = 0.38;  // peak, at the rim; falls away from there
+const ZONE_BAND_WIDTH = 1.1;     // feet, mostly falloff
+const ZONE_BAND_OPACITY = 0.7;
+const ZONE_BAND_Y = 0.008;       // above the fills, below the heat-map at 0.012
+
+// Grayscale falloff centred on the rim, used as the alpha ramp for the zone
+// fills. Court colour is worth the most where the shots are, so it holds full
+// strength around the basket and thins out toward half-court instead of
+// flooding the floor at one flat value.
+function buildZoneFalloffTexture() {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, size, size);
+
+  // CanvasTexture flips vertically, so court z grows upward from the canvas
+  // bottom edge.
+  const cx = size / 2;
+  const cy = size - (RIM_Z / COURT_LENGTH) * size;
+  const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, size);
+  gradient.addColorStop(0.00, 'rgba(255,255,255,1)');
+  gradient.addColorStop(0.35, 'rgba(255,255,255,0.90)');
+  gradient.addColorStop(0.60, 'rgba(255,255,255,0.64)');
+  gradient.addColorStop(0.85, 'rgba(255,255,255,0.44)');
+  gradient.addColorStop(1.00, 'rgba(255,255,255,0.34)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  // ShapeGeometry emits raw court coordinates as UVs, so fold feet into 0..1.
+  texture.repeat.set(1 / COURT_WIDTH, 1 / COURT_LENGTH);
+  texture.offset.set(0.5, 0);
+  return texture;
+}
 
 // Tint each scoring area with the same colour its filter button uses, so the
 // court itself teaches the Paint / Mid-Range / 3PT split. Real region shapes:
@@ -110,6 +146,7 @@ function buildZoneFloors() {
   insideHole.closePath();
   three.holes.push(insideHole);
 
+  const falloff = buildZoneFalloffTexture();
   for (const [shape, color, y] of [[three, ZONE_COLORS.three, 0.004], [mid, ZONE_COLORS.mid, 0.005], [paint, ZONE_COLORS.paint, 0.006]]) {
     const mesh = new THREE.Mesh(
       new THREE.ShapeGeometry(shape),
@@ -117,6 +154,7 @@ function buildZoneFloors() {
         color,
         transparent: true,
         opacity: ZONE_FILL_OPACITY,
+        alphaMap: falloff,
         depthWrite: false,
         side: THREE.DoubleSide,
       }),
@@ -133,15 +171,17 @@ function buildZoneFloors() {
   return group;
 }
 
-// A flat band of constant width laid along a polyline on the floor.
+// A soft glow of constant width laid along a polyline on the floor.
 //
-// THREE.Line is one device pixel wide on every platform that matters, which is
-// far too faint to mark a zone boundary from a broadcast camera. This builds
-// real geometry instead, so the Paint / Mid-Range / 3PT edges stay legible at
-// any distance.
+// THREE.Line is one device pixel wide on every platform that matters, far too
+// faint to mark a zone boundary from a broadcast camera. This builds real
+// geometry instead — three rows of vertices, solid down the middle and
+// transparent at both edges, so the boundary fades into the floor rather than
+// sitting on it as a hard stripe.
 function bandFromPoints(points, color, { width = ZONE_BAND_WIDTH, y = ZONE_BAND_Y, opacity = ZONE_BAND_OPACITY } = {}) {
   const half = width / 2;
   const positions = [];
+  const colors = [];
   const indices = [];
 
   for (let i = 0; i < points.length; i++) {
@@ -156,22 +196,31 @@ function bandFromPoints(points, color, { width = ZONE_BAND_WIDTH, y = ZONE_BAND_
     dz /= length;
     const nx = -dz * half;
     const nz = dx * half;
-    positions.push(points[i][0] + nx, y, points[i][1] + nz);
-    positions.push(points[i][0] - nx, y, points[i][1] - nz);
+    const [px, pz] = points[i];
+    positions.push(px + nx, y, pz + nz, px, y, pz, px - nx, y, pz - nz);
+    // RGBA vertex colours; only the alpha varies, so the material's own colour
+    // carries the hue and the edges fade to nothing.
+    colors.push(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0);
   }
 
   for (let i = 0; i < points.length - 1; i++) {
-    const a = i * 2;
-    indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    const a = i * 3;
+    const b = (i + 1) * 3;
+    indices.push(
+      a, a + 1, b, a + 1, b + 1, b,             // outer half
+      a + 1, a + 2, b + 1, a + 2, b + 2, b + 1, // inner half
+    );
   }
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 4));
   geometry.setIndex(indices);
   const material = new THREE.MeshBasicMaterial({
     color,
     transparent: true,
     opacity,
+    vertexColors: true,
     side: THREE.DoubleSide,
     depthWrite: false,
   });
