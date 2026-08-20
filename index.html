@@ -10,7 +10,6 @@
     <div id="app-root">
       <div id="app-title">
         <h1>COURT VISION 3D <span class="version-badge">V2</span></h1>
-        <p>Every shot of an NBA player's season on a 3D court — green went in, red missed, taller spikes = better scoring areas</p>
       </div>
       <div id="app"></div>
       <div id="split-app" class="hidden"></div>
@@ -62,7 +61,7 @@
         <h3>Help</h3>
         <div class="btn-row">
           <button id="help-btn">Keyboard shortcuts</button>
-          <button id="tour-btn">Guided tour</button>
+          <button id="tour-btn">Step-by-step guide</button>
           <button id="demo-reset-btn">Reset to demo</button>
         </div>
       </div>
@@ -87,15 +86,7 @@
       <div id="sidebar" class="panel hidden"></div>
 
       <div id="onboarding" class="modal-backdrop hidden">
-        <div class="modal">
-          <h2>Welcome to Court Vision 3D</h2>
-          <ol>
-            <li>Each marker is <strong>one real shot</strong> — <strong>green</strong> went in, <strong>red</strong> missed. Taller spikes mark areas where the player scores best. <strong>Drag</strong> to spin the court, <strong>scroll</strong> to zoom.</li>
-            <li>Use <strong>“Shot filters &amp; tools”</strong> (bottom-left) to switch players or show only certain shots — e.g. just three-pointers, or just makes.</li>
-            <li>Use the <strong>“Camera view”</strong> buttons (bottom-right) to change angles — Top-Down looks like a classic paper shot chart.</li>
-          </ol>
-          <button id="onboarding-dismiss">Got it</button>
-        </div>
+        <div class="modal"></div>
       </div>
 
       <div id="help-modal" class="modal-backdrop hidden">

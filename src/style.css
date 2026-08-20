@@ -798,3 +798,45 @@ body.high-contrast .pill.active {
 
 /* Visual cue while a dragged panel is latched to an edge or another panel */
 .snapped { outline: 2px solid rgba(77, 242, 163, 0.85); outline-offset: 2px; }
+
+/* ---------- Step-by-step walkthrough ---------- */
+.guide-modal {
+  max-width: 460px;
+  text-align: left;
+  user-select: none;
+}
+.guide-figure {
+  background: #0c0e14;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 14px;
+}
+.guide-figure svg { display: block; width: 100%; height: auto; }
+.guide-counter {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b3b1a8;
+  margin-bottom: 4px;
+}
+.guide-modal h2 { margin: 0 0 6px; font-size: 20px; }
+.guide-body {
+  margin: 0 0 14px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #dfe3ec;
+}
+.guide-dots { display: flex; gap: 7px; margin-bottom: 14px; }
+.guide-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+}
+.guide-dot.current { background: #4df2a3; }
+.guide-actions { display: flex; align-items: center; gap: 10px; }
+.guide-actions .pill.active { margin-left: auto; }

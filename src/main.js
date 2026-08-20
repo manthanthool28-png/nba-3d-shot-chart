@@ -26,7 +26,8 @@ import { renderSidebar } from './ui/sidebar.js';
 import { renderOverlay, renderCallouts } from './ui/overlay.js';
 import { renderTableView } from './ui/tableView.js';
 import { renderStatsView } from './ui/statsView.js';
-import { initOnboarding, initHelpModal } from './ui/onboarding.js';
+import { initHelpModal } from './ui/onboarding.js';
+import { createGuide } from './ui/guide.js';
 import { createShotLabels } from './ui/labels.js';
 import { createSplitView2D } from './ui/splitView2d.js';
 import { createPlayerCard } from './ui/playerCard.js';
@@ -112,7 +113,10 @@ async function main() {
   let tray = [];
   let split2DOpen = false;
 
-  initOnboarding();
+  // Illustrated step-by-step walkthrough: shown once to new visitors and
+  // re-openable any time from the settings panel.
+  const guide = createGuide();
+  if (!localStorage.getItem('shotchart.onboarding.seen')) guide.show();
   const helpModal = initHelpModal();
   initMenuDock();
   const overlayWrap = document.querySelector('#overlay-wrap');
@@ -555,16 +559,15 @@ async function main() {
   });
   document.querySelector('#tour-btn').addEventListener('click', () => {
     els.settingsPanel.classList.add('hidden');
-    cameraDirector.runTour(PRESET_LIST.filter((p) => p !== 'shooterPOV' && p !== 'defenderPOV'), {
-      onStep: (name) => renderCallouts(els.callouts, [`Touring: ${name.replace(/([A-Z])/g, ' $1')}`]),
-    });
+    document.body.classList.remove('settings-open');
+    guide.show();
   });
 
   initKeyboardNav({
     camera,
     controls,
     onReset: () => cameraDirector.goTo(getPreset('broadcast')),
-    onEscape: () => { interaction.clearSelection(); els.settingsPanel.classList.add('hidden'); helpModal.hide(); toggleStatsView(false); },
+    onEscape: () => { interaction.clearSelection(); setSettingsOpen(false); helpModal.hide(); guide.hide(); toggleStatsView(false); },
     onToggleHelp: () => helpModal.toggle(),
   });
 
