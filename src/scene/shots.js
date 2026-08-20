@@ -3,9 +3,14 @@ import { zoneGroupOf } from '../data/zones.js';
 import { shotColor } from './colorEncoding.js';
 import { ZONE_FOOTPRINTS } from './court.js';
 
-const MIN_HEIGHT = 0.4;
-const MAX_HEIGHT = 3.2;
-const EFG_CEILING = 0.68; // eFG% at/above this maps to full spike height
+const MIN_HEIGHT = 0.5;
+const MAX_HEIGHT = 6.0;
+// Real NBA zone eFG% sits roughly between 30% and 70%. Mapping from 0% wasted
+// most of the scale and squeezed every spike into the top third, so they all
+// looked the same height; anchoring the floor near the realistic minimum makes
+// the differences between zones visible.
+const EFG_FLOOR = 0.30;
+const EFG_CEILING = 0.70;
 const MIN_RADIUS = 0.07;
 const MAX_RADIUS = 0.22;
 
@@ -37,8 +42,33 @@ export function computeZoneEfg(shots) {
 }
 
 function heightFor(efg) {
-  const t = Math.min(efg / EFG_CEILING, 1);
+  const t = Math.max(0, Math.min((efg - EFG_FLOOR) / (EFG_CEILING - EFG_FLOOR), 1));
   return MIN_HEIGHT + (MAX_HEIGHT - MIN_HEIGHT) * t;
+}
+
+// Spike height/thickness use the six detailed NBA zones (Restricted Area,
+// In The Paint (Non-RA), Mid-Range, Above the Break 3, and both corner 3s)
+// rather than the three coarse groups, so the court shows real variation
+// instead of three flat plateaus. The coarse groups still drive the stats
+// panel and charts — this only affects the 3D encoding.
+export function computeDetailEfg(shots) {
+  const totals = new Map();
+  for (const shot of shots) {
+    const t = totals.get(shot.zone) ?? { fga: 0, fgm: 0, tpm: 0 };
+    t.fga += 1;
+    if (shot.made) {
+      t.fgm += 1;
+      if (shot.shotType === '3PT Field Goal') t.tpm += 1;
+    }
+    totals.set(shot.zone, t);
+  }
+  const efg = new Map();
+  const volume = new Map();
+  for (const [zone, t] of totals) {
+    efg.set(zone, t.fga > 0 ? (t.fgm + 0.5 * t.tpm) / t.fga : 0);
+    volume.set(zone, t.fga);
+  }
+  return { efg, volume };
 }
 
 function radiusFor(volume, maxVolume) {
@@ -51,8 +81,9 @@ function radiusFor(volume, maxVolume) {
 // offset/opacity let a second dataset be plotted alongside the primary one
 // (comparison overlay/split modes) without duplicating this whole function.
 export function buildShotField(shots, colorOptions, streakIds = new Set(), { offsetX = 0, offsetZ = 0, opacity = 1 } = {}) {
-  const { efg, volume } = computeZoneEfg(shots);
-  const maxVolume = Math.max(...Object.values(volume), 1);
+  const { efg, volume } = computeZoneEfg(shots);       // coarse groups: stats panel
+  const detail = computeDetailEfg(shots);              // fine zones: spike geometry
+  const maxVolume = Math.max(...detail.volume.values(), 1);
 
   const geometry = new THREE.ConeGeometry(1, 1, 8);
   geometry.translate(0, 0.5, 0); // base at local y=0, tip at y=1, so per-instance scale.y == spike height
@@ -72,9 +103,8 @@ export function buildShotField(shots, colorOptions, streakIds = new Set(), { off
   const baseColors = [];
   const tops = [];
   shots.forEach((shot, i) => {
-    const key = zoneGroupOf(shot);
-    const h = heightFor(key ? efg[key] : 0.3);
-    const r = radiusFor(key ? volume[key] : 0, maxVolume);
+    const h = heightFor(detail.efg.get(shot.zone) ?? EFG_FLOOR);
+    const r = radiusFor(detail.volume.get(shot.zone) ?? 0, maxVolume);
 
     dummy.position.set(shot.x + offsetX, 0, shot.z + offsetZ);
     dummy.scale.set(r, h, r);
@@ -89,8 +119,7 @@ export function buildShotField(shots, colorOptions, streakIds = new Set(), { off
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
 
   glowShots.forEach((shot, i) => {
-    const key = zoneGroupOf(shot);
-    const h = heightFor(key ? efg[key] : 0.3);
+    const h = heightFor(detail.efg.get(shot.zone) ?? EFG_FLOOR);
     dummy.position.set(shot.x + offsetX, h + 0.15, shot.z + offsetZ);
     dummy.scale.set(1, 1, 1);
     dummy.updateMatrix();
