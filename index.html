@@ -10,7 +10,7 @@
     <div id="app-root">
       <div id="app-title">
         <h1>COURT VISION 3D <span class="version-badge">V2</span></h1>
-        <p class="tagline">Seeing basketball in new dimensions</p>
+        <p class="tagline">Seeing basketball in a new dimension</p>
       </div>
       <div id="app"></div>
       <div id="split-app" class="hidden"></div>
@@ -43,7 +43,13 @@
         <label class="row checkbox"><input type="checkbox" id="contrast-toggle" /><span>High contrast</span></label>
         <label class="row checkbox"><input type="checkbox" id="motion-toggle" /><span>Reduce motion</span></label>
         <label class="row checkbox"><input type="checkbox" id="audio-toggle" /><span>Crowd audio (muted by default)</span></label>
-        <label class="row checkbox"><input type="checkbox" id="player-toggle" checked /><span>Player figure</span></label>
+        <label class="row checkbox"><input type="checkbox" id="player-toggle" checked /><span>Show player card</span></label>
+        <label class="row"><span>Player card style</span>
+          <select id="player-mode">
+            <option value="3d">3D figure</option>
+            <option value="portrait">Portrait</option>
+          </select>
+        </label>
         <label class="row checkbox"><input type="checkbox" id="labels-toggle" /><span>"What am I looking at?" labels</span></label>
         <label class="row checkbox"><input type="checkbox" id="table-toggle" /><span>Table view (accessible data view)</span></label>
 

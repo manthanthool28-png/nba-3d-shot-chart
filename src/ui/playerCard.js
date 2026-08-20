@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { makeCollapsible } from './collapsible.js';
+import { createPlayerPortrait } from './playerPortrait.js';
 
 // Small self-contained viewport on the right edge showing a 3D player.
 // If a GLB model exists in public/models/ (per-player slug or player.glb),
@@ -274,6 +275,9 @@ export function createPlayerCard(parent) {
   canvasWrap.className = 'player-card-canvas';
   content.appendChild(canvasWrap);
 
+  const portrait = createPlayerPortrait(canvasWrap);
+  let mode = localStorage.getItem('shotchart.playercard.mode') || '3d';
+
   const nameEl = document.createElement('div');
   nameEl.className = 'player-card-name';
   content.appendChild(nameEl);
@@ -400,6 +404,9 @@ export function createPlayerCard(parent) {
     nameEl.textContent = name;
     const token = ++loadToken;
 
+    portrait.render({ name, teamColor, number: JERSEY_NUMBERS[name] });
+    applyMode();
+
     // Show the procedural figure immediately; swap in a GLB if one exists.
     showFigure(buildFigure(teamColor, JERSEY_NUMBERS[name], poseKey));
     swapInBallModel(figure);
@@ -427,6 +434,7 @@ export function createPlayerCard(parent) {
   function update(dt, reduceMotion) {
     // offsetParent is null whenever the card or its content is hidden
     // (settings toggle or collapsed state) — skip rendering then.
+    if (mode === 'portrait') return;
     if (!figure || !renderer.domElement.offsetParent) return;
     if (!reduceMotion) {
       figure.rotation.y += dt * 0.6;
@@ -439,18 +447,35 @@ export function createPlayerCard(parent) {
     container.classList.toggle('hidden', !visible);
   }
 
+  // '3d' = the posed figure, 'portrait' = the uniform portrait card.
+  function applyMode() {
+    const showPortrait = mode === 'portrait';
+    portrait.setVisible(showPortrait);
+    renderer.domElement.classList.toggle('hidden', showPortrait);
+  }
+
+  function setMode(next) {
+    mode = next === 'portrait' ? 'portrait' : '3d';
+    localStorage.setItem('shotchart.playercard.mode', mode);
+    applyMode();
+  }
+
   // Strike the shooting motion for the selected shot. The pose is held while
   // that shot stays selected; pass 'idle' (or clear the selection) to relax.
-  function showPose(bucket) {
-    if (!current.name || !POSES[bucket] || bucket === poseKey) return;
+  function showPose(bucket, shooterName = null) {
+    if (!current.name || !POSES[bucket]) return;
+    // In split-compare the clicked shot may belong to the other player; name
+    // whoever actually took it rather than the card's primary player.
+    const who = shooterName || current.name;
+    if (bucket === poseKey && nameEl.textContent.startsWith(who)) return;
     poseKey = bucket;
     const rot = figure ? figure.rotation.y : 0;
     showFigure(buildFigure(current.teamColor, JERSEY_NUMBERS[current.name], poseKey));
     if (figure) figure.rotation.y = rot; // keep the idle spin continuous
     swapInBallModel(figure);
     const label = POSES[bucket].label;
-    nameEl.textContent = label ? `${current.name} · ${label}` : current.name;
+    nameEl.textContent = label ? `${who} · ${label}` : who;
   }
 
-  return { setPlayer, update, setVisible, showPose };
+  return { setPlayer, update, setVisible, showPose, setMode, getMode: () => mode };
 }

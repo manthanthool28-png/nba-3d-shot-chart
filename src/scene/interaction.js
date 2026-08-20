@@ -73,7 +73,7 @@ export function createShotInteraction({ scene, camera, renderer, tooltipEl }) {
       const { fi, id } = parseKey(k);
       const shot = fields[fi]?.shots[id];
       // Tag with the court's label so the sidebar can say whose shot it is.
-      return shot ? { ...shot, sourceLabel: fields[fi].label } : null;
+      return shot ? { ...shot, sourceLabel: fields[fi].label, sourceOffsetX: fields[fi].offsetX ?? 0 } : null;
     }).filter(Boolean);
   }
 

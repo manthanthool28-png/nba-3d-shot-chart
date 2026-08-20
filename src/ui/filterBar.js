@@ -57,13 +57,25 @@ export function renderFilterBar(container, { subjectOptions, seasonOptions, data
   if (subjectOptions?.length > 1) {
     const playerRow = groupRow('Player');
     const select = document.createElement('select');
-    select.title = "Choose whose shots to look at";
+    select.className = 'player-select';
+    select.title = 'Choose whose shots to look at';
+    // Group into Players / Teams so the list scans quickly.
+    const groups = new Map();
     for (const opt of subjectOptions) {
-      const el = document.createElement('option');
-      el.value = opt.key;
-      el.textContent = opt.label;
-      el.selected = opt.key === datasetKey;
-      select.appendChild(el);
+      if (!groups.has(opt.group)) groups.set(opt.group, []);
+      groups.get(opt.group).push(opt);
+    }
+    for (const [groupName, opts] of groups) {
+      const holder = groups.size > 1 ? document.createElement('optgroup') : select;
+      if (holder !== select) holder.label = groupName;
+      for (const opt of opts) {
+        const el = document.createElement('option');
+        el.value = opt.key;
+        el.textContent = opt.label;
+        el.selected = opt.key === datasetKey;
+        holder.appendChild(el);
+      }
+      if (holder !== select) select.appendChild(holder);
     }
     select.addEventListener('change', () => onDatasetChange(select.value));
     playerRow.appendChild(select);

@@ -17,9 +17,9 @@ function seededUnit(seed) {
 // plausible arc, clearly not reconstructed physics. Made shots end at the
 // rim center; missed shots end near the rim/backboard/air based on a
 // deterministic pseudo-random category so misses don't all look identical.
-function missTarget(shot) {
+function missTarget(shot, offsetX = 0) {
   const r = seededUnit(shot.id);
-  const rim = new THREE.Vector3(0, HOOP_HEIGHT, RIM_Z);
+  const rim = new THREE.Vector3(offsetX, HOOP_HEIGHT, RIM_Z);
   if (r < 0.4) {
     // short/long off the rim
     const angle = seededUnit(shot.id + 1) * Math.PI * 2;
@@ -27,19 +27,20 @@ function missTarget(shot) {
   }
   if (r < 0.7) {
     // off the backboard
-    return new THREE.Vector3((seededUnit(shot.id + 3) - 0.5) * 3, HOOP_HEIGHT + 1 + seededUnit(shot.id + 4), 4.1);
+    return new THREE.Vector3(offsetX + (seededUnit(shot.id + 3) - 0.5) * 3, HOOP_HEIGHT + 1 + seededUnit(shot.id + 4), 4.1);
   }
   // airball, wide of the rim
   const angle = seededUnit(shot.id + 5) * Math.PI * 2;
   return rim.clone().add(new THREE.Vector3(Math.cos(angle) * 2.2, seededUnit(shot.id + 6) * 1.5, Math.sin(angle) * 2.2));
 }
 
-export function buildShotArc(shot) {
+// `offsetX` shifts the whole arc onto the compare court in split view.
+export function buildShotArc(shot, { offsetX = 0 } = {}) {
   const group = new THREE.Group();
   const color = shot.made ? MADE_COLOR : MISS_COLOR;
 
-  const start = new THREE.Vector3(shot.x, RELEASE_HEIGHT, shot.z);
-  const end = shot.made ? new THREE.Vector3(0, HOOP_HEIGHT, RIM_Z) : missTarget(shot);
+  const start = new THREE.Vector3(shot.x + offsetX, RELEASE_HEIGHT, shot.z);
+  const end = shot.made ? new THREE.Vector3(offsetX, HOOP_HEIGHT, RIM_Z) : missTarget(shot, offsetX);
 
   const peakY = Math.max(start.y, end.y) + 2.5 + Math.min(shot.distanceFt, 30) * 0.06;
   const mid = new THREE.Vector3((start.x + end.x) / 2, peakY, (start.z + end.z) / 2);

@@ -220,6 +220,7 @@ async function main() {
           baseColors: compareField.baseColors,
           tops: compareField.tops,
           label: compareDataset.name,
+          offsetX: OFFSET,
         });
         courtLabels.setSamples([
           { position: new THREE.Vector3(0, 15, 23.5), text: dataset.name },
@@ -282,13 +283,30 @@ async function main() {
       .filter(([key, entry]) => key !== 'latest' && entry.name === dataset.name && entry.subjectType === 'player')
       .map(([key, entry]) => ({ key, season: entry.season, seasonType: entry.seasonType }));
 
-    const subjectOptions = Object.entries(manifest)
-      .filter(([key]) => key !== 'latest')
-      .map(([key, entry]) => ({
+    // Grouped picker: players first (alphabetical, one entry per season), then
+    // whole teams. The season only appears when a player has more than one, so
+    // the common case reads as a plain name.
+    const entries = Object.entries(manifest).filter(([key]) => key !== 'latest');
+    const seasonCount = new Map();
+    for (const [, e] of entries) seasonCount.set(e.name, (seasonCount.get(e.name) ?? 0) + 1);
+
+    const toOption = ([key, e]) => {
+      const many = (seasonCount.get(e.name) ?? 0) > 1;
+      const season = e.seasonType === 'Playoffs' ? `${e.season} playoffs` : e.season;
+      return {
         key,
-        label: `${entry.name} — ${entry.season}${entry.seasonType === 'Playoffs' ? ' (Playoffs)' : ''}`,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+        label: many ? `${e.name} · ${season}` : e.name,
+        group: e.subjectType === 'team' ? 'Teams' : 'Players',
+        sortName: e.name,
+        season: e.season,
+      };
+    };
+
+    const subjectOptions = entries
+      .map(toOption)
+      .sort((a, b) => (a.group === b.group
+        ? (a.sortName.localeCompare(b.sortName) || a.label.localeCompare(b.label))
+        : (a.group === 'Players' ? -1 : 1)));
 
     const gameDates = timeline.source.length ? [timeline.source[0].date, timeline.source[timeline.source.length - 1].date] : null;
 
@@ -361,10 +379,12 @@ async function main() {
     renderSidebarUI();
     arcGroup.clear();
     if (shots.length === 1) {
-      arcGroup.add(buildShotArc(shots[0]));
+      // In split view the compare court sits at +62 on x, so the arc has to
+      // be drawn over whichever court the shot belongs to.
+      arcGroup.add(buildShotArc(shots[0], { offsetX: shots[0].sourceOffsetX ?? 0 }));
       // Put the figure into the shooting motion for that shot type
       // (dunk, hook, fadeaway...).
-      playerCard.showPose(actionBucketOf(shots[0]));
+      playerCard.showPose(actionBucketOf(shots[0]), shots[0].sourceLabel);
     } else {
       playerCard.showPose('idle'); // nothing selected — relax the figure
     }
@@ -494,6 +514,10 @@ async function main() {
   const playerToggle = document.querySelector('#player-toggle');
   playerToggle.checked = true;
   playerToggle.addEventListener('change', (e) => playerCard.setVisible(e.target.checked));
+
+  const playerMode = document.querySelector('#player-mode');
+  playerMode.value = playerCard.getMode();
+  playerMode.addEventListener('change', (e) => playerCard.setMode(e.target.value));
 
   document.querySelector('#labels-toggle').addEventListener('change', (e) => {
     els.labelsSamples = e.target.checked;

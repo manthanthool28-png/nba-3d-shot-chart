@@ -849,3 +849,9 @@ body.high-contrast .pill.active {
 .guide-dot.current { background: #4df2a3; }
 .guide-actions { display: flex; align-items: center; gap: 10px; }
 .guide-actions .pill.active { margin-left: auto; }
+
+/* Portrait alternative to the 3D figure — same footprint as the canvas */
+.player-portrait {
+  display: block;
+  border-radius: 8px;
+}
