@@ -551,7 +551,6 @@ button:focus-visible, .pill:focus-visible, select:focus-visible {
 }
 #sidebar h3 { margin: 0 0 6px; font-size: 17px; }
 #sidebar .detail-row { font-size: 15px; color: #dfe3ec; margin: 3px 0; }
-#sidebar .detail-note { font-size: 15px; color: #a6acbd; margin-top: 8px; font-style: italic; }
 #sidebar .tray-item {
   display: flex;
   justify-content: space-between;
@@ -863,10 +862,3 @@ body.high-contrast .pill.active {
   border-radius: 8px;
 }
 
-/* Shown when a made/missed filter makes the zone percentages tautological */
-.filter-warning {
-  color: #ffd166 !important;
-  border-left: 3px solid #ffd166;
-  padding-left: 8px;
-  margin: 6px 0 4px;
-}

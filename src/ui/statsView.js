@@ -143,14 +143,8 @@ function renderCourtCard(el, shots, colorOpts) {
 
 // ---- eFG% by zone vs league average ----
 // When the view is filtered to makes or misses, eFG% is fixed by the filter,
-// so the league-average comparison is dropped and the card says why.
+// so the league-average comparison is dropped.
 function renderZoneEfg(el, shots, leagueEfg, outcomeFiltered = false) {
-  if (outcomeFiltered) {
-    const note = document.createElement('div');
-    note.className = 'chart-sub filter-warning';
-    note.textContent = 'Filtered to one outcome — these are 100%/0% by definition, not season efficiency.';
-    el.appendChild(note);
-  }
   const rows = Object.entries(ZONE_GROUPS).map(([key, group]) => {
     const zoneShots = shots.filter((s) => zoneGroupOf(s) === key);
     return { key, label: group.label, att: zoneShots.length, efg: efgPct(zoneShots), league: leagueEfg?.[key] };

@@ -41,15 +41,9 @@ export function renderOverlay(container, { name, season, seasonType, shownCount,
   hint.appendChild(document.createTextNode(' · thicker = more attempts'));
   container.appendChild(hint);
 
+  // A made/missed filter pins every zone figure to 100% or 0%, so the
+  // vs-league comparison below is dropped while one is active.
   const outcomeFiltered = outcomeFilter !== 'all';
-  if (outcomeFiltered) {
-    const note = document.createElement('div');
-    note.className = 'hint filter-warning';
-    note.textContent = outcomeFilter === 'made'
-      ? 'Showing made shots only — the zone figures below are 100% by definition, not season efficiency.'
-      : 'Showing missed shots only — the zone figures below are 0% by definition, not season efficiency.';
-    container.appendChild(note);
-  }
 
   if (leagueEfg) {
     for (const [key, group] of Object.entries(ZONE_GROUPS)) {

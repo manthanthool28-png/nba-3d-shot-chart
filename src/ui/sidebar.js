@@ -35,11 +35,6 @@ export function renderSidebar(container, { selectedShots, tray, onPin, onUnpin, 
       container.appendChild(row);
     }
 
-    const note = document.createElement('div');
-    note.className = 'detail-note';
-    note.textContent = 'Video clip link and on-court lineup aren’t available from this data source.';
-    container.appendChild(note);
-
     const btnRow = document.createElement('div');
     btnRow.className = 'btn-row';
     const pinBtn = document.createElement('button');
