@@ -9,6 +9,10 @@ html, body {
   height: 100%;
   background: #0a0a0f;
   overflow: hidden;
+  /* Kills pull-to-refresh and the rubber-band overscroll. On a tablet either
+     one hands the drag to the browser mid-gesture, which pulls the browser
+     chrome back and drops full screen. */
+  overscroll-behavior: none;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #fff;
 }
@@ -38,6 +42,10 @@ html, body {
 
 #app canvas, #split-app canvas {
   display: block;
+  /* The canvas handles its own drags for orbit and pan. Without this the
+     browser also reads them as scroll or edge gestures, which is what kept
+     knocking tablets out of full screen mid-interaction. */
+  touch-action: none;
 }
 
 .hidden {
@@ -862,3 +870,22 @@ body.high-contrast .pill.active {
   border-radius: 8px;
 }
 
+
+/* ---------- Unattended reset warning ---------- */
+#idle-toast {
+  /* Centred rather than docked to an edge: the bottom strip belongs to the
+     filter bar and the camera panel, and this needs to be seen before it
+     wipes what the visitor was looking at. */
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}

@@ -32,7 +32,8 @@ import { createShotLabels } from './ui/labels.js';
 import { createSplitView2D } from './ui/splitView2d.js';
 import { createPlayerCard } from './ui/playerCard.js';
 import { initKeyboardNav } from './ui/keyboard.js';
-import { initFullscreen, toggleFullscreen } from './ui/fullscreen.js';
+import { initFullscreen, toggleFullscreen, setFullscreenLock, fullscreenLockEnabled } from './ui/fullscreen.js';
+import { initIdleReset, idleResetEnabled } from './ui/kiosk.js';
 import { initMenuDock, makeDraggable, resetPanelPositions, clampAllPanels } from './ui/menuDock.js';
 import { makeCollapsible } from './ui/collapsible.js';
 import { updateUrl, copyText, screenshotPng, loadBookmarks, saveBookmark, removeBookmark } from './ui/share.js';
@@ -595,6 +596,60 @@ async function main() {
     localStorage.removeItem('shotchart.menu.autohide');
     location.href = location.pathname;
   });
+
+  // Same destination as the button above, reached without a page load. The
+  // unattended reset runs this instead, because reloading would drop full
+  // screen — the one thing a demo tablet most needs to keep.
+  async function restartInPlace() {
+    const fresh = createInitialState();
+    state.filters = fresh.filters;
+    state.compareKey = null;
+    state.compareMode = 'off';
+    state.colorMode = fresh.colorMode;
+    state.palette = fresh.palette;
+    state.highContrast = false;
+    state.axisLock = 'none';
+    state.dragMode = 'rotate';
+    state.autoOrbit = false;
+    state.tray = [];
+    tray = [];
+    timeline = { open: false, index: 0, playing: false, speed: 1, source: [] };
+
+    interaction.clearSelection();
+    setSettingsOpen(false);
+    helpModal.hide();
+    guide.hide();
+    toggleStatsView(false);
+    toggleTableView(false);
+    resetPanelPositions();
+
+    document.body.classList.remove('high-contrast');
+    setHighContrast(false);
+    setDragMode('rotate');
+    cameraDirector.setAutoOrbit(false);
+    cameraDirector.goTo(getPreset('broadcast'));
+
+    // Put the settings controls back in step with the state above.
+    document.querySelector('#color-mode').value = state.colorMode;
+    document.querySelector('#colorblind-toggle').checked = false;
+    document.querySelector('#contrast-toggle').checked = false;
+
+    await loadCompare(null);
+    refresh();
+    renderTimelineUI();
+    guide.show();
+  }
+
+  const fsLockToggle = document.querySelector('#fs-lock-toggle');
+  fsLockToggle.checked = fullscreenLockEnabled();
+  setFullscreenLock(fsLockToggle.checked);
+  fsLockToggle.addEventListener('change', (e) => setFullscreenLock(e.target.checked));
+
+  const idle = initIdleReset({ onReset: restartInPlace });
+  const idleToggle = document.querySelector('#idle-reset-toggle');
+  idleToggle.checked = idleResetEnabled();
+  idle.setEnabled(idleToggle.checked);
+  idleToggle.addEventListener('change', (e) => idle.setEnabled(e.target.checked));
   document.querySelector('#tour-btn').addEventListener('click', () => {
     els.settingsPanel.classList.add('hidden');
     document.body.classList.remove('settings-open');
